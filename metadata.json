@@ -1,0 +1,6 @@
+{
+  "name": "Study Hub - Online Test Portal",
+  "description": "Practice online tests, track your performance, and prepare smarter with Study Hub - a modern test portal for students and educators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

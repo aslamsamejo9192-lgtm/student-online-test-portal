@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access for students and admins",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Test": {
+      "title": "Test",
+      "description": "Educational online test with multiple-choice questions",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "duration": { "type": "number" },
+        "passingPercentage": { "type": "number" },
+        "questions": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "duration", "passingPercentage", "questions"]
+    },
+    "Result": {
+      "title": "Result",
+      "description": "Student test attempt submission and evaluation result",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 100 },
+        "testId": { "type": "string", "maxLength": 128 },
+        "testName": { "type": "string", "maxLength": 200 },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "percentage": { "type": "number" },
+        "status": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "answers": { "type": "object" },
+        "timeTaken": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "testId", "score", "totalQuestions", "percentage", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and role information"
+    },
+    "/tests/{testId}": {
+      "schema": "Test",
+      "description": "Available tests created by admins"
+    },
+    "/results/{resultId}": {
+      "schema": "Result",
+      "description": "Test submissions and score breakdown"
+    }
+  }
+}
