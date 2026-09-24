@@ -261,35 +261,45 @@ export default function StudentDashboard() {
           </div>
 
           <div className="space-y-3">
-            {tests.slice(0, 4).map((test) => (
-              <div
-                key={test.id}
-                className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all"
-              >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wide">
-                    {test.subject}
-                  </span>
-                  <span className="text-xs text-slate-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {test.duration}m
-                  </span>
-                </div>
-                <h4 className="font-bold text-sm text-slate-900 mb-1">{test.title}</h4>
-                <p className="text-xs text-slate-500 line-clamp-1 mb-3">{test.description}</p>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <span className="text-xs text-slate-500">
-                    {test.questions?.length || 0} questions
-                  </span>
-                  <Link
-                    to={`/test/${test.id}`}
-                    className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    Start Test
-                  </Link>
-                </div>
+            {tests.length === 0 ? (
+              <div className="p-6 text-center bg-white rounded-2xl border border-slate-200">
+                <BookOpen className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-700">No Tests Available Yet</p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Instructors haven't published any exams yet. Check back soon!
+                </p>
               </div>
-            ))}
+            ) : (
+              tests.slice(0, 4).map((test) => (
+                <div
+                  key={test.id}
+                  className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wide">
+                      {test.subject}
+                    </span>
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {test.duration}m
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-sm text-slate-900 mb-1">{test.title}</h4>
+                  <p className="text-xs text-slate-500 line-clamp-1 mb-3">{test.description}</p>
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span className="text-xs text-slate-500">
+                      {test.questions?.length || 0} questions
+                    </span>
+                    <Link
+                      to={`/test/${test.id}`}
+                      className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    >
+                      Start Test
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -61,74 +61,54 @@ export default function Navbar() {
                 </span>
               </div>
             </Link>
-
-            {/* Config Status Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-              {isFirebaseConfigured ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <Flame className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Firebase Live</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  <Database className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Demo Mode (Local Storage)</span>
-                </>
-              )}
-            </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              to="/"
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive("/") && location.pathname === "/"
-                  ? "text-blue-600 bg-blue-50/80 font-semibold"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-              }`}
-            >
-              Home
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/tests"
+                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive("/tests")
+                      ? "text-blue-600 bg-blue-50/80 font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Available Tests
+                </Link>
 
-            <Link
-              to="/tests"
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive("/tests")
-                  ? "text-blue-600 bg-blue-50/80 font-semibold"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-              }`}
-            >
-              Available Tests
-            </Link>
+                {!isAdmin && (
+                  <Link
+                    to="/dashboard"
+                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive("/dashboard")
+                        ? "text-blue-600 bg-blue-50/80 font-semibold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    Dashboard
+                  </Link>
+                )}
 
-            {isAuthenticated && !isAdmin && (
-              <Link
-                to="/dashboard"
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/dashboard")
-                    ? "text-blue-600 bg-blue-50/80 font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                Dashboard
-              </Link>
-            )}
-
-            {isAuthenticated && isAdmin && (
-              <Link
-                to="/admin"
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  isActive("/admin")
-                    ? "text-indigo-700 bg-indigo-50 font-semibold"
-                    : "text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50/50"
-                }`}
-              >
-                <Shield className="w-4 h-4 text-indigo-600" />
-                Admin Console
-              </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                      isActive("/admin")
+                        ? "text-indigo-700 bg-indigo-50 font-semibold"
+                        : "text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50/50"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4 text-indigo-600" />
+                    Admin Console
+                  </Link>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-slate-500 font-medium px-2">
+                Online Examination Portal
+              </span>
             )}
           </nav>
 
@@ -227,16 +207,16 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <Link
-                  to="/login"
-                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                  to="/register"
+                  className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:shadow-blue-500/30"
                 >
-                  Login
+                  Student Registration
                 </Link>
                 <Link
-                  to="/register"
-                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:shadow-blue-500/30"
+                  to="/login"
+                  className="px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                 >
-                  Register
+                  Login
                 </Link>
                 <Link
                   to="/admin/login"
@@ -267,28 +247,24 @@ export default function Navbar() {
         <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <span className="text-xs font-medium text-slate-400">Navigation</span>
-            <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
-              {isFirebaseConfigured ? "🔥 Firebase Live" : "💾 Demo Mode Active"}
-            </div>
+            <span className="text-[11px] font-medium text-slate-500">
+              Study Hub Portal
+            </span>
           </div>
 
           <div className="space-y-1">
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-600"
-            >
-              <GraduationCap className="w-4 h-4 text-blue-600" />
-              Home
-            </Link>
-            <Link
-              to="/tests"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-600"
-            >
-              <BookOpen className="w-4 h-4 text-blue-600" />
-              Available Tests
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/tests"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-600"
+                >
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  Available Tests
+                </Link>
+              </>
+            ) : null}
 
             {isAuthenticated && !isAdmin && (
               <>
@@ -374,13 +350,23 @@ export default function Navbar() {
                   <UserPlus className="w-4 h-4" />
                   Register
                 </Link>
-                <Link
-                  to="/admin/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="col-span-2 mt-1 text-center py-2 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-xl bg-indigo-50/50"
-                >
-                  Admin Portal Login
-                </Link>
+                <div className="col-span-2 mt-1 py-2 px-3 text-xs font-semibold text-indigo-700 border border-indigo-200 rounded-xl bg-indigo-50/50 flex items-center justify-center gap-2">
+                  <Link
+                    to="/admin/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:underline"
+                  >
+                    Admin Login
+                  </Link>
+                  <span>•</span>
+                  <Link
+                    to="/admin/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:underline"
+                  >
+                    Admin Register
+                  </Link>
+                </div>
               </div>
             )}
           </div>

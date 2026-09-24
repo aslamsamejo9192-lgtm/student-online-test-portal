@@ -1,13 +1,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import DemoNoticeBanner from "./components/DemoNoticeBanner";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Student & Public Pages
-import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -16,32 +14,68 @@ import TestAttemptPage from "./pages/TestAttemptPage";
 import ResultPage from "./pages/ResultPage";
 import StudentProfile from "./pages/StudentProfile";
 import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
 
 // Admin Pages
 import AdminLogin from "./pages/AdminLogin";
+import AdminRegister from "./pages/AdminRegister";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManageTests from "./pages/ManageTests";
 import AddTest from "./pages/AddTest";
 import EditTest from "./pages/EditTest";
 import StudentResults from "./pages/StudentResults";
 
+/**
+ * StartingGate ensures that when a student opens the portal at start (/),
+ * registration is mandatory before accessing examinations.
+ */
+function StartingGate() {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
+  }
+
+  // Mandatory student registration at starting
+  return <Navigate to="/register" replace />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 font-sans">
-          <DemoNoticeBanner />
           <Navbar />
 
           <main className="flex-1">
             <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/tests" element={<AvailableTests />} />
+              {/* Starting Route: Student must register first */}
+              <Route path="/" element={<StartingGate />} />
 
-              {/* Test Attempt & Results */}
+              {/* Authentication Routes */}
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/home" element={<Home />} />
+
+              {/* Available Tests - Protected: Registration required first */}
+              <Route
+                path="/tests"
+                element={
+                  <ProtectedRoute>
+                    <AvailableTests />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Test Attempt & Results - Protected */}
               <Route
                 path="/test/:id"
                 element={
@@ -87,6 +121,7 @@ export default function App() {
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/register" element={<AdminRegister />} />
               <Route
                 path="/admin"
                 element={

@@ -72,12 +72,6 @@ export default function Login() {
     }
   };
 
-  const setDemoStudent = () => {
-    setEmail("student@studyhub.com");
-    setPassword("studentPassword123!");
-    setError("");
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -199,23 +193,6 @@ export default function Login() {
               )}
             </div>
           )}
-
-          {/* Quick Demo Autofill Helper */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span className="font-semibold text-slate-700">Quick Testing:</span>
-              <button
-                type="button"
-                onClick={setDemoStudent}
-                className="text-blue-600 hover:text-blue-700 font-medium underline"
-              >
-                Auto-fill Student Credentials
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Demo: student@studyhub.com / studentPassword123!
-            </p>
-          </div>
         </div>
 
         {/* Footer links */}
@@ -229,7 +206,11 @@ export default function Login() {
           <p className="text-xs text-slate-400">
             Are you an administrator?{" "}
             <Link to="/admin/login" className="font-medium text-indigo-600 hover:underline">
-              Access Admin Portal
+              Admin Login
+            </Link>
+            {" "}•{" "}
+            <Link to="/admin/register" className="font-medium text-indigo-600 hover:underline">
+              Admin Registration
             </Link>
           </p>
         </div>

@@ -87,46 +87,6 @@ export default function AddTest() {
     });
   };
 
-  // Pre-fill MBBS Anatomy sample questions helper
-  const handleFillSample = () => {
-    setTitle("Cardiovascular & Systemic Physiology Quiz");
-    setSubject("Physiology");
-    setDescription(
-      "Comprehensive examination evaluating cardiac output, vascular hemodynamics, and renal filtration rates."
-    );
-    setDuration(12);
-    setPassingPercentage(70);
-    setQuestions([
-      {
-        id: "sample-q1",
-        question: "What is the normal cardiac pacemaker in a healthy human heart?",
-        options: {
-          A: "Atrioventricular (AV) node",
-          B: "Sinoatrial (SA) node",
-          C: "Bundle of His",
-          D: "Purkinje fibers"
-        },
-        correctAnswer: "B",
-        explanation:
-          "The SA node spontaneously depolarizes at the fastest intrinsic rate, serving as the primary cardiac pacemaker."
-      },
-      {
-        id: "sample-q2",
-        question: "Which hormone regulates sodium reabsorption in the distal convoluted tubule?",
-        options: {
-          A: "Aldosterone",
-          B: "Insulin",
-          C: "Glucagon",
-          D: "Thyroxine"
-        },
-        correctAnswer: "A",
-        explanation:
-          "Aldosterone acts upon mineralocorticoid receptors in the distal tubule to stimulate sodium reabsorption and potassium excretion."
-      }
-    ]);
-    setError("");
-  };
-
   // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -211,15 +171,6 @@ export default function AddTest() {
             </p>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={handleFillSample}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors self-start sm:self-auto cursor-pointer"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Load Sample Questions</span>
-        </button>
       </div>
 
       {error && (

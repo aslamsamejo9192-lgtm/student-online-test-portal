@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { getTests } from "../firebase";
 import {
   BookOpen,
@@ -10,10 +11,12 @@ import {
   ArrowRight,
   Sparkles,
   HelpCircle,
-  Award
+  Award,
+  PlusCircle
 } from "lucide-react";
 
 export default function AvailableTests() {
+  const { isAdmin } = useAuth();
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,6 +115,29 @@ export default function AvailableTests() {
         <div className="py-20 text-center">
           <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <p className="text-sm font-medium text-slate-500">Loading available tests...</p>
+        </div>
+      ) : tests.length === 0 ? (
+        <div className="py-16 px-4 text-center bg-white rounded-3xl border border-slate-200 max-w-md mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <h3 className="font-bold text-slate-900 text-base">No Tests Available Yet</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-5">
+            There are currently no examinations published. Tests added by instructors will appear here automatically.
+          </p>
+          {isAdmin ? (
+            <Link
+              to="/admin/tests/add"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Create New Test</span>
+            </Link>
+          ) : (
+            <p className="text-xs font-medium text-slate-400">
+              Please check back shortly or check with your teacher.
+            </p>
+          )}
         </div>
       ) : filteredTests.length === 0 ? (
         <div className="py-16 px-4 text-center bg-white rounded-3xl border border-slate-200 max-w-md mx-auto">

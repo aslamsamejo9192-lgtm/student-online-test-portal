@@ -49,12 +49,6 @@ export default function AdminLogin() {
     }
   };
 
-  const fillAdminDemo = () => {
-    setEmail("admin@studyhub.com");
-    setPassword("adminPassword123!");
-    setError("");
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -135,32 +129,23 @@ export default function AdminLogin() {
               )}
             </button>
           </form>
-
-          {/* Demo Admin Helper */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span className="font-semibold text-slate-700">Quick Testing:</span>
-              <button
-                type="button"
-                onClick={fillAdminDemo}
-                className="text-indigo-600 hover:text-indigo-700 font-medium underline"
-              >
-                Auto-fill Admin Credentials
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Demo: admin@studyhub.com / adminPassword123!
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-500">
-          Not an administrator?{" "}
-          <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-            Switch to Student Login
-          </Link>
-        </p>
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-xs text-slate-600">
+            Need an administrator account?{" "}
+            <Link to="/admin/register" className="font-semibold text-indigo-600 hover:underline">
+              Register as Admin
+            </Link>
+          </p>
+          <p className="text-xs text-slate-500">
+            Not an administrator?{" "}
+            <Link to="/login" className="font-semibold text-blue-600 hover:underline">
+              Switch to Student Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     loadAdminData();
   }, []);
 
-  const totalStudents = students.length || 1;
+  const totalStudents = students.length;
   const totalTests = tests.length;
   const totalAttempts = results.length;
 
@@ -245,29 +245,38 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-3">
-            {tests.slice(0, 4).map((test) => (
-              <div
-                key={test.id}
-                className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 transition-all flex items-center justify-between gap-3"
-              >
-                <div>
-                  <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wide">
-                    {test.subject}
-                  </span>
-                  <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{test.title}</h4>
-                  <p className="text-xs text-slate-500">
-                    {test.questions?.length || 0} questions • {test.duration}m
-                  </p>
-                </div>
-
-                <Link
-                  to={`/admin/tests/edit/${test.id}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 shrink-0"
-                >
-                  Edit
-                </Link>
+            {tests.length === 0 ? (
+              <div className="p-5 text-center bg-white rounded-2xl border border-slate-200">
+                <p className="text-xs text-slate-500 mb-1">No active tests published yet.</p>
+                <p className="text-[11px] text-slate-400">
+                  Click below to create your first examination.
+                </p>
               </div>
-            ))}
+            ) : (
+              tests.slice(0, 4).map((test) => (
+                <div
+                  key={test.id}
+                  className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 transition-all flex items-center justify-between gap-3"
+                >
+                  <div>
+                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wide">
+                      {test.subject}
+                    </span>
+                    <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{test.title}</h4>
+                    <p className="text-xs text-slate-500">
+                      {test.questions?.length || 0} questions • {test.duration}m
+                    </p>
+                  </div>
+
+                  <Link
+                    to={`/admin/tests/edit/${test.id}`}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 shrink-0"
+                  >
+                    Edit
+                  </Link>
+                </div>
+              ))
+            )}
 
             <Link
               to="/admin/tests/add"

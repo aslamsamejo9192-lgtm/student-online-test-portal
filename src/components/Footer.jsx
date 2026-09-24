@@ -71,6 +71,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/admin/register" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-indigo-500" />
+                  Admin Registration
+                </Link>
+              </li>
+              <li>
                 <Link to="/admin" className="hover:text-indigo-600 transition-colors">
                   Admin Dashboard
                 </Link>
@@ -97,7 +103,7 @@ export default function Footer() {
               <div className="flex items-center justify-between py-1 border-b border-slate-100">
                 <span>Database Engine:</span>
                 <span className="font-semibold text-slate-800">
-                  {isFirebaseConfigured ? "Cloud Firestore" : "Local Storage (Demo)"}
+                  {isFirebaseConfigured ? "Cloud Firestore" : "Secure Local Storage"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-slate-100">

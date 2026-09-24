@@ -76,34 +76,42 @@ const LS_KEYS = {
 function initLocalStorage() {
   if (typeof window === "undefined") return;
 
-  if (!localStorage.getItem(LS_KEYS.TESTS)) {
-    localStorage.setItem(LS_KEYS.TESTS, JSON.stringify(INITIAL_DEMO_TESTS));
+  // Clean up any legacy demo tests
+  const existingTests = JSON.parse(localStorage.getItem(LS_KEYS.TESTS) || "[]");
+  const cleanedTests = existingTests.filter(
+    (t) => t.id !== "mbbs-anatomy-101" && t.id !== "cs-web-dev-201"
+  );
+  localStorage.setItem(LS_KEYS.TESTS, JSON.stringify(cleanedTests));
+
+  // Clean up any legacy demo results
+  const existingResults = JSON.parse(localStorage.getItem(LS_KEYS.RESULTS) || "[]");
+  const cleanedResults = existingResults.filter(
+    (r) => r.id !== "sample-res-1" && r.userId !== "demo-student-id"
+  );
+  localStorage.setItem(LS_KEYS.RESULTS, JSON.stringify(cleanedResults));
+
+  // If a demo student was previously cached, remove it so student must register
+  const currUser = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT_USER) || "null");
+  if (currUser && (currUser.uid === "demo-student-id" || currUser.email === "student@studyhub.com")) {
+    localStorage.removeItem(LS_KEYS.CURRENT_USER);
   }
-  if (!localStorage.getItem(LS_KEYS.RESULTS)) {
-    localStorage.setItem(LS_KEYS.RESULTS, JSON.stringify(INITIAL_DEMO_RESULTS));
+
+  // Ensure administrator account is available for portal administration
+  const existingUsers = JSON.parse(localStorage.getItem(LS_KEYS.USERS) || "[]");
+  const cleanedUsers = existingUsers.filter(
+    (u) => u.uid !== "demo-student-id" && u.email !== "student@studyhub.com"
+  );
+  if (!cleanedUsers.some((u) => u.role === "admin")) {
+    cleanedUsers.push({
+      uid: "admin-default-id",
+      name: "System Administrator",
+      email: "admin@studyhub.com",
+      role: "admin",
+      password: "adminPassword123!",
+      createdAt: new Date().toISOString()
+    });
   }
-  if (!localStorage.getItem(LS_KEYS.USERS)) {
-    // Default demo users
-    const defaultUsers = [
-      {
-        uid: "admin-default-id",
-        name: "Admin Officer",
-        email: "admin@studyhub.com",
-        role: "admin",
-        password: "adminPassword123!",
-        createdAt: new Date().toISOString()
-      },
-      {
-        uid: "demo-student-id",
-        name: "Alex Rivera",
-        email: "student@studyhub.com",
-        role: "student",
-        password: "studentPassword123!",
-        createdAt: new Date().toISOString()
-      }
-    ];
-    localStorage.setItem(LS_KEYS.USERS, JSON.stringify(defaultUsers));
-  }
+  localStorage.setItem(LS_KEYS.USERS, JSON.stringify(cleanedUsers));
 }
 
 // Run initializer
