@@ -10,8 +10,9 @@ import {
   AlertCircle,
   Loader2,
   Shield,
-  CheckCircle2
+  Key
 } from "lucide-react";
+import { SUPER_ADMIN_EMAILS, ADMIN_SECURITY_CODE } from "../firebase";
 
 export default function AdminRegister() {
   const { register } = useAuth();
@@ -21,6 +22,7 @@ export default function AdminRegister() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [adminPasscode, setAdminPasscode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,6 +38,14 @@ export default function AdminRegister() {
       setError("Please enter a valid administrator email address.");
       return;
     }
+    const cleanEmail = email.trim().toLowerCase();
+    const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(cleanEmail);
+
+    if (!isSuperAdmin && adminPasscode.trim() !== ADMIN_SECURITY_CODE) {
+      setError("Invalid Administrator Master Security Key. Only authorized institution administrators can register.");
+      return;
+    }
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters in length.");
       return;
@@ -47,7 +57,9 @@ export default function AdminRegister() {
 
     try {
       setLoading(true);
-      await register(name.trim(), email.trim(), password, "admin");
+      await register(name.trim(), email.trim(), password, "admin", {
+        adminPasscode: adminPasscode.trim()
+      });
       navigate("/admin", { replace: true });
     } catch (err) {
       setError(err.message || "Failed to register administrator account.");
@@ -65,11 +77,11 @@ export default function AdminRegister() {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <div className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold mb-2">
-            Administrator & Instructor Portal
+            Restricted Admin Registration
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Admin Registration</h1>
-          <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
-            Create an instructor or exam administrator account to manage tests and student results.
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-sm mx-auto">
+            Requires institutional verification. Students cannot register here; please use the student portal.
           </p>
         </div>
 
@@ -85,7 +97,7 @@ export default function AdminRegister() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Instructor / Admin Name
+                Instructor / Admin Name *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -95,7 +107,7 @@ export default function AdminRegister() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Prof. David Miller"
+                  placeholder="e.g. Aslam Samejo"
                   required
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
                 />
@@ -104,7 +116,7 @@ export default function AdminRegister() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Admin Email Address
+                Admin Email Address *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -121,50 +133,76 @@ export default function AdminRegister() {
               </div>
             </div>
 
+            {/* Master Security Key */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Admin Security Password
+              <label className="block text-xs font-semibold text-indigo-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Master Admin Security Passcode *</span>
+                <span className="text-[10px] text-slate-400 font-normal lowercase">Required for authorization</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-500">
+                  <Key className="w-4 h-4" />
                 </div>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  required
-                  minLength={6}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
+                  value={adminPasscode}
+                  onChange={(e) => setAdminPasscode(e.target.value)}
+                  placeholder="Enter Master Security Key"
+                  required={!SUPER_ADMIN_EMAILS.includes(email.trim().toLowerCase())}
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/30 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400"
                 />
               </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Only institution admins with the master passcode can create administrative privileges.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Confirm Admin Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Admin Password *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Min 6 characters"
+                    required
+                    minLength={6}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
+                  />
                 </div>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  required
-                  minLength={6}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
-                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Confirm Password *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    required
+                    minLength={6}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
+                  />
+                </div>
               </div>
             </div>
 
             <div className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-900">
               <Shield className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
               <span>
-                Admin privileges include creating, editing, and deleting online tests as well as reviewing all student grade records.
+                Authorized administrators have full access to create tests, manage questions, and review all student results.
               </span>
             </div>
 
@@ -176,11 +214,11 @@ export default function AdminRegister() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Registering Administrator...</span>
+                  <span>Verifying Credentials &amp; Registering...</span>
                 </>
               ) : (
                 <>
-                  <span>Create Admin Account</span>
+                  <span>Register Verified Administrator</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -199,7 +237,7 @@ export default function AdminRegister() {
           <p className="text-xs text-slate-500">
             Are you a student?{" "}
             <Link to="/register" className="font-semibold text-blue-600 hover:underline">
-              Student Registration
+              Switch to Student Registration
             </Link>
           </p>
         </div>

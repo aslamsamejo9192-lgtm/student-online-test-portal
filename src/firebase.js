@@ -28,6 +28,7 @@ import {
   orderBy
 } from "firebase/firestore";
 import { INITIAL_DEMO_TESTS, INITIAL_DEMO_RESULTS } from "./data/demoData";
+import { MEDICO_MDCAT_TEST } from "./data/medicoMcatTest";
 
 // Environment variable reading
 const firebaseConfig = {
@@ -70,7 +71,8 @@ const LS_KEYS = {
   USERS: "studyhub_users",
   CURRENT_USER: "studyhub_curr_user",
   TESTS: "studyhub_tests",
-  RESULTS: "studyhub_results"
+  RESULTS: "studyhub_results",
+  PAYMENTS: "studyhub_payments"
 };
 
 function initLocalStorage() {
@@ -81,7 +83,26 @@ function initLocalStorage() {
   const cleanedTests = existingTests.filter(
     (t) => t.id !== "mbbs-anatomy-101" && t.id !== "cs-web-dev-201"
   );
+
+  // Seed the 115-MCQ Medico Engineer MDCAT Mock Exam if not present or outdated
+  const medicoIndex = cleanedTests.findIndex((t) => t.id === MEDICO_MDCAT_TEST.id);
+  if (medicoIndex === -1) {
+    cleanedTests.unshift(MEDICO_MDCAT_TEST);
+  } else {
+    // Keep test updated with latest status (free exam) and full questions
+    cleanedTests[medicoIndex] = {
+      ...cleanedTests[medicoIndex],
+      ...MEDICO_MDCAT_TEST,
+      isPaid: false,
+      price: 0
+    };
+  }
   localStorage.setItem(LS_KEYS.TESTS, JSON.stringify(cleanedTests));
+
+  // Initialize payments storage if empty
+  if (!localStorage.getItem(LS_KEYS.PAYMENTS)) {
+    localStorage.setItem(LS_KEYS.PAYMENTS, JSON.stringify([]));
+  }
 
   // Clean up any legacy demo results
   const existingResults = JSON.parse(localStorage.getItem(LS_KEYS.RESULTS) || "[]");
@@ -90,29 +111,67 @@ function initLocalStorage() {
   );
   localStorage.setItem(LS_KEYS.RESULTS, JSON.stringify(cleanedResults));
 
-  // If a demo student was previously cached, remove it so student must register
-  const currUser = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT_USER) || "null");
-  if (currUser && (currUser.uid === "demo-student-id" || currUser.email === "student@studyhub.com")) {
-    localStorage.removeItem(LS_KEYS.CURRENT_USER);
-  }
-
-  // Ensure administrator account is available for portal administration
+  // Ensure exclusive administrator account (aslamsamejo9192@gmail.com / samejo45)
   const existingUsers = JSON.parse(localStorage.getItem(LS_KEYS.USERS) || "[]");
   const cleanedUsers = existingUsers.filter(
-    (u) => u.uid !== "demo-student-id" && u.email !== "student@studyhub.com"
+    (u) =>
+      u.uid !== "demo-student-id" &&
+      u.email !== "student@studyhub.com" &&
+      u.uid !== "admin-default-id" &&
+      u.email !== "admin@studyhub.com"
   );
-  if (!cleanedUsers.some((u) => u.role === "admin")) {
+
+  let adminFound = false;
+  cleanedUsers.forEach((u) => {
+    if ((u.email || "").toLowerCase() === ADMIN_EMAIL) {
+      u.role = "admin";
+      u.password = ADMIN_PASSWORD;
+      u.name = u.name || "Aslam Samejo";
+      adminFound = true;
+    } else {
+      u.role = "student";
+    }
+  });
+
+  if (!adminFound) {
     cleanedUsers.push({
-      uid: "admin-default-id",
-      name: "System Administrator",
-      email: "admin@studyhub.com",
+      uid: "admin-aslam-samejo",
+      name: "Aslam Samejo",
+      email: ADMIN_EMAIL,
       role: "admin",
-      password: "adminPassword123!",
+      password: ADMIN_PASSWORD,
+      status: "Active",
       createdAt: new Date().toISOString()
     });
   }
   localStorage.setItem(LS_KEYS.USERS, JSON.stringify(cleanedUsers));
+
+  // Validate cached current user
+  const currUser = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT_USER) || "null");
+  if (currUser) {
+    if (
+      currUser.uid === "demo-student-id" ||
+      currUser.email === "student@studyhub.com" ||
+      currUser.email === "admin@studyhub.com"
+    ) {
+      localStorage.removeItem(LS_KEYS.CURRENT_USER);
+    } else if ((currUser.email || "").toLowerCase() === ADMIN_EMAIL) {
+      currUser.role = "admin";
+      localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(currUser));
+    } else {
+      currUser.role = "student";
+      localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(currUser));
+    }
+  }
 }
+
+// -------------------------------------------------------------
+// ACCESS CONTROL & DESIGNATED ADMIN ACCOUNT
+// -------------------------------------------------------------
+export const ADMIN_EMAIL = "aslamsamejo9192@gmail.com";
+export const ADMIN_PASSWORD = "samejo45";
+export const SUPER_ADMIN_EMAILS = [ADMIN_EMAIL];
+export const ADMIN_SECURITY_CODE = "Aslam-56";
 
 // Run initializer
 initLocalStorage();
@@ -122,10 +181,31 @@ initLocalStorage();
 // -------------------------------------------------------------
 
 /**
- * Register a new student or admin
+ * Register a new student (or authenticate admin if using admin email + password).
+ * STRICT SECURITY: Only aslamsamejo9192@gmail.com with password samejo45 can be admin.
  */
-export async function registerUser(name, email, password, role = "student") {
+export async function registerUser(name, email, password, role = "student", extraData = {}) {
   const cleanEmail = email.trim().toLowerCase();
+
+  // If the admin uses his email and password on the registration form, sign him in as Admin
+  if (cleanEmail === ADMIN_EMAIL) {
+    if (password !== ADMIN_PASSWORD) {
+      throw new Error("Incorrect administrator password.");
+    }
+    const adminUser = {
+      uid: "admin-aslam-samejo",
+      name: name.trim() || "Aslam Samejo",
+      email: ADMIN_EMAIL,
+      role: "admin",
+      status: "Active"
+    };
+    localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(adminUser));
+    triggerLocalAuthSubscribers(adminUser);
+    return adminUser;
+  }
+
+  // All other accounts are strictly students
+  const targetRole = "student";
 
   if (isFirebaseConfigured && auth && db) {
     try {
@@ -134,12 +214,16 @@ export async function registerUser(name, email, password, role = "student") {
       
       await updateProfile(user, { displayName: name });
 
-      // Save user profile in Firestore
+      // Save complete user profile in Firestore
       const userDocRef = doc(db, "users", user.uid);
       const userData = {
         name: name.trim(),
         email: cleanEmail,
-        role: role,
+        role: targetRole,
+        rollNo: extraData.rollNo ? extraData.rollNo.trim() : "",
+        phone: extraData.phone ? extraData.phone.trim() : "",
+        department: extraData.department ? extraData.department.trim() : "",
+        status: "Active",
         createdAt: new Date().toISOString()
       };
       await setDoc(userDocRef, userData);
@@ -148,7 +232,11 @@ export async function registerUser(name, email, password, role = "student") {
         uid: user.uid,
         name: name.trim(),
         email: cleanEmail,
-        role: role
+        role: targetRole,
+        rollNo: userData.rollNo,
+        phone: userData.phone,
+        department: userData.department,
+        status: "Active"
       };
     } catch (err) {
       console.error("Firebase Registration Error:", err);
@@ -166,7 +254,11 @@ export async function registerUser(name, email, password, role = "student") {
     uid: "usr-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
     name: name.trim(),
     email: cleanEmail,
-    role: role,
+    role: targetRole,
+    rollNo: extraData.rollNo ? extraData.rollNo.trim() : "",
+    phone: extraData.phone ? extraData.phone.trim() : "",
+    department: extraData.department ? extraData.department.trim() : "",
+    status: "Active",
     password: password,
     createdAt: new Date().toISOString()
   };
@@ -178,7 +270,11 @@ export async function registerUser(name, email, password, role = "student") {
     uid: newUser.uid,
     name: newUser.name,
     email: newUser.email,
-    role: newUser.role
+    role: newUser.role,
+    rollNo: newUser.rollNo,
+    phone: newUser.phone,
+    department: newUser.department,
+    status: newUser.status
   };
   localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(authUser));
   triggerLocalAuthSubscribers(authUser);
@@ -191,6 +287,23 @@ export async function registerUser(name, email, password, role = "student") {
 export async function loginUser(email, password) {
   const cleanEmail = email.trim().toLowerCase();
 
+  // Exclusive Admin Authentication Check (aslamsamejo9192@gmail.com / samejo45)
+  if (cleanEmail === ADMIN_EMAIL) {
+    if (password !== ADMIN_PASSWORD) {
+      throw new Error("Incorrect administrator password.");
+    }
+    const adminUser = {
+      uid: "admin-aslam-samejo",
+      name: "Aslam Samejo",
+      email: ADMIN_EMAIL,
+      role: "admin",
+      status: "Active"
+    };
+    localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(adminUser));
+    triggerLocalAuthSubscribers(adminUser);
+    return adminUser;
+  }
+
   if (isFirebaseConfigured && auth && db) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
@@ -198,19 +311,18 @@ export async function loginUser(email, password) {
 
       // Fetch user role from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      let role = "student";
+      const role = "student";
       let name = user.displayName || "User";
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-        role = data.role || "student";
         name = data.name || name;
       } else {
         // Create user document if missing
         await setDoc(doc(db, "users", user.uid), {
           name: name,
           email: user.email,
-          role: "student",
+          role: role,
           createdAt: new Date().toISOString()
         });
       }
@@ -242,7 +354,7 @@ export async function loginUser(email, password) {
     uid: found.uid,
     name: found.name,
     email: found.email,
-    role: found.role || "student"
+    role: "student"
   };
   localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(authUser));
   triggerLocalAuthSubscribers(authUser);
@@ -348,11 +460,12 @@ export function subscribeToAuthChanges(callback) {
       if (firebaseUser) {
         try {
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          let role = "student";
+          const isSuperAdmin = SUPER_ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase());
+          let role = isSuperAdmin ? "admin" : "student";
           let name = firebaseUser.displayName || "User";
           if (userDoc.exists()) {
             const data = userDoc.data();
-            role = data.role || "student";
+            role = isSuperAdmin ? "admin" : data.role || "student";
             name = data.name || name;
           }
           callback({
@@ -363,11 +476,12 @@ export function subscribeToAuthChanges(callback) {
           });
         } catch (e) {
           console.error("Error reading user doc on auth change:", e);
+          const isSuperAdmin = SUPER_ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase());
           callback({
             uid: firebaseUser.uid,
             name: firebaseUser.displayName || "User",
             email: firebaseUser.email,
-            role: "student"
+            role: isSuperAdmin ? "admin" : "student"
           });
         }
       } else {
@@ -624,7 +738,7 @@ export async function getResultById(id) {
 }
 
 /**
- * Get all students for admin dashboard metrics
+ * Get all students for admin dashboard metrics & student management directory
  */
 export async function getAllStudents() {
   if (isFirebaseConfigured && db) {
@@ -633,8 +747,9 @@ export async function getAllStudents() {
       const snapshot = await getDocs(q);
       const students = [];
       snapshot.forEach((docSnap) => {
-        students.push({ id: docSnap.id, ...docSnap.data() });
+        students.push({ id: docSnap.id, uid: docSnap.id, ...docSnap.data() });
       });
+      students.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       return students;
     } catch (err) {
       console.warn("Firestore getAllStudents error:", err);
@@ -644,7 +759,168 @@ export async function getAllStudents() {
   // Local fallback
   initLocalStorage();
   const users = JSON.parse(localStorage.getItem(LS_KEYS.USERS) || "[]");
-  return users.filter((u) => u.role === "student");
+  return users
+    .filter((u) => u.role === "student")
+    .map((u) => ({ id: u.uid, ...u }))
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
+/**
+ * Delete a student record (Admin only)
+ */
+export async function deleteStudent(studentId) {
+  if (isFirebaseConfigured && db) {
+    try {
+      await deleteDoc(doc(db, "users", studentId));
+      return true;
+    } catch (err) {
+      console.error("Firestore deleteStudent error:", err);
+      throw err;
+    }
+  }
+
+  // Local fallback
+  const users = JSON.parse(localStorage.getItem(LS_KEYS.USERS) || "[]");
+  const filtered = users.filter((u) => u.uid !== studentId && u.id !== studentId);
+  localStorage.setItem(LS_KEYS.USERS, JSON.stringify(filtered));
+  return true;
+}
+
+// -------------------------------------------------------------
+// PAYMENT & ACCESS UNLOCK SERVICES (EasyPaisa & JazzCash)
+// -------------------------------------------------------------
+
+/**
+ * Save payment transaction (EasyPaisa / JazzCash) and unlock test for student
+ */
+export async function savePayment(paymentData) {
+  const preparedData = {
+    ...paymentData,
+    amount: Number(paymentData.amount) || 10,
+    status: paymentData.status || "Verified",
+    createdAt: paymentData.createdAt || new Date().toISOString()
+  };
+
+  if (isFirebaseConfigured && db) {
+    try {
+      const docRef = await addDoc(collection(db, "payments"), preparedData);
+      // Also update user's unlocked tests list in firestore if userId available
+      if (paymentData.studentId && paymentData.testId) {
+        try {
+          const userRef = doc(db, "users", paymentData.studentId);
+          const uDoc = await getDoc(userRef);
+          if (uDoc.exists()) {
+            const currUnlocked = uDoc.data().unlockedTests || [];
+            if (!currUnlocked.includes(paymentData.testId)) {
+              await updateDoc(userRef, {
+                unlockedTests: [...currUnlocked, paymentData.testId]
+              });
+            }
+          }
+        } catch (uErr) {
+          console.warn("Could not update user doc for unlockedTests:", uErr);
+        }
+      }
+      return { id: docRef.id, ...preparedData };
+    } catch (err) {
+      console.warn("Firestore savePayment error, falling back:", err);
+    }
+  }
+
+  // Local fallback
+  initLocalStorage();
+  const payments = JSON.parse(localStorage.getItem(LS_KEYS.PAYMENTS) || "[]");
+  const newPayment = {
+    id: "pay-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+    ...preparedData
+  };
+  payments.unshift(newPayment);
+  localStorage.setItem(LS_KEYS.PAYMENTS, JSON.stringify(payments));
+
+  // Unlock test in local users array and current user session
+  if (paymentData.studentId && paymentData.testId) {
+    const users = JSON.parse(localStorage.getItem(LS_KEYS.USERS) || "[]");
+    const uIndex = users.findIndex(
+      (u) => u.uid === paymentData.studentId || u.id === paymentData.studentId
+    );
+    if (uIndex !== -1) {
+      users[uIndex].unlockedTests = users[uIndex].unlockedTests || [];
+      if (!users[uIndex].unlockedTests.includes(paymentData.testId)) {
+        users[uIndex].unlockedTests.push(paymentData.testId);
+      }
+      localStorage.setItem(LS_KEYS.USERS, JSON.stringify(users));
+    }
+
+    const curr = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT_USER) || "null");
+    if (curr && (curr.uid === paymentData.studentId || curr.id === paymentData.studentId)) {
+      curr.unlockedTests = curr.unlockedTests || [];
+      if (!curr.unlockedTests.includes(paymentData.testId)) {
+        curr.unlockedTests.push(paymentData.testId);
+      }
+      localStorage.setItem(LS_KEYS.CURRENT_USER, JSON.stringify(curr));
+      triggerLocalAuthSubscribers(curr);
+    }
+  }
+
+  return newPayment;
+}
+
+/**
+ * Get all payment records for administrative verification
+ */
+export async function getPayments() {
+  if (isFirebaseConfigured && db) {
+    try {
+      const q = query(collection(db, "payments"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      const payments = [];
+      snapshot.forEach((d) => payments.push({ id: d.id, ...d.data() }));
+      if (payments.length > 0) return payments;
+    } catch (err) {
+      console.warn("Firestore getPayments error:", err);
+    }
+  }
+
+  initLocalStorage();
+  const payments = JSON.parse(localStorage.getItem(LS_KEYS.PAYMENTS) || "[]");
+  return payments;
+}
+
+/**
+ * Check if a test is unlocked for a user
+ */
+export function isTestUnlocked(test, user) {
+  if (!test) return true;
+  // If test is free, unlocked for all
+  if (!test.isPaid || test.price === 0) return true;
+
+  // Administrators always have full complimentary access
+  if (user?.role === "admin") return true;
+  if (SUPER_ADMIN_EMAILS.includes((user?.email || "").toLowerCase())) return true;
+
+  if (!user) return false;
+
+  // Check if testId is in user's unlockedTests array
+  if (user.unlockedTests && user.unlockedTests.includes(test.id)) {
+    return true;
+  }
+
+  // Check in payments storage for any matching verified payment
+  try {
+    const payments = JSON.parse(localStorage.getItem(LS_KEYS.PAYMENTS) || "[]");
+    const hasPaid = payments.some(
+      (p) =>
+        (p.studentId === user.uid ||
+          (p.studentEmail && p.studentEmail.toLowerCase() === (user.email || "").toLowerCase())) &&
+        p.testId === test.id &&
+        p.status === "Verified"
+    );
+    if (hasPaid) return true;
+  } catch (e) {
+    // ignore
+  }
+
+  return false;
 }
 
 // -------------------------------------------------------------

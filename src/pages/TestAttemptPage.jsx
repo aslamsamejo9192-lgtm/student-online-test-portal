@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getTestById, saveResult } from "../firebase";
+import { getTestById, saveResult, isTestUnlocked } from "../firebase";
+import QuestionRenderer from "../components/QuestionRenderer";
+import PaymentModal from "../components/PaymentModal";
 import {
   Clock,
   AlertTriangle,
@@ -12,7 +14,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  Lock,
+  CreditCard,
+  Sparkles,
+  Smartphone
 } from "lucide-react";
 
 export default function TestAttemptPage() {
@@ -23,6 +29,8 @@ export default function TestAttemptPage() {
   const [test, setTest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isUnlocked, setIsUnlocked] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Test state
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -55,6 +63,10 @@ export default function TestAttemptPage() {
         const durationSec = (testData.duration || 10) * 60;
         setTimeLeft(durationSec);
         setTotalSeconds(durationSec);
+
+        // Check if paid and unlocked
+        const accessGranted = isTestUnlocked(testData, user);
+        setIsUnlocked(accessGranted);
       } catch (err) {
         console.error("Error loading test:", err);
         setError("An error occurred while loading test questions.");
@@ -63,11 +75,11 @@ export default function TestAttemptPage() {
       }
     }
     loadTest();
-  }, [id]);
+  }, [id, user]);
 
   // Countdown Timer
   useEffect(() => {
-    if (loading || !test || submitting) return;
+    if (loading || !test || submitting || !isUnlocked) return;
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -83,7 +95,7 @@ export default function TestAttemptPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [loading, test, submitting]);
+  }, [loading, test, submitting, isUnlocked]);
 
   // Auto-submit when timer expires
   const handleTimeExpire = () => {
@@ -218,6 +230,86 @@ export default function TestAttemptPage() {
     );
   }
 
+  // Payment Locked Gate: Student must pay Rs. 10 via EasyPaisa or JazzCash to attempt
+  if (test.isPaid && !isUnlocked) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-lg w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-7 text-center relative">
+            <div className="w-14 h-14 rounded-2xl bg-amber-400/20 text-amber-400 flex items-center justify-center mx-auto mb-3 border border-amber-400/30">
+              <Lock className="w-7 h-7" />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold mb-2 text-slate-200">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Paid Examination Required</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+              {test.title}
+            </h2>
+            <p className="text-xs text-slate-300 mt-2 max-w-sm mx-auto leading-relaxed">
+              This official assessment requires an attempt fee of <strong>Rs. {test.price || 10} PKR</strong> payable via EasyPaisa or JazzCash.
+            </p>
+          </div>
+
+          <div className="p-6 sm:p-8 space-y-6">
+            {/* Payment Summary Box */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200/80 pb-2.5">
+                <span className="font-medium">Total Questions:</span>
+                <span className="font-bold text-slate-900">{test.questions?.length || 0} MCQs</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200/80 pb-2.5">
+                <span className="font-medium">Duration:</span>
+                <span className="font-bold text-slate-900">{test.duration || 150} Minutes</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200/80 pb-2.5">
+                <span className="font-medium">Supported Payment Methods:</span>
+                <span className="font-bold text-indigo-700 flex items-center gap-1">
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                  EasyPaisa &amp; JazzCash
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-bold uppercase text-slate-700">Registration Fee:</span>
+                <span className="text-xl font-black text-emerald-600">Rs. {test.price || 10} PKR</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Pay Rs. {test.price || 10} via EasyPaisa / JazzCash</span>
+              </button>
+
+              <Link
+                to="/tests"
+                className="w-full py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-center"
+              >
+                Return to Test Catalog
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          test={test}
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={() => {
+            setIsUnlocked(true);
+            setShowPaymentModal(false);
+          }}
+        />
+      </div>
+    );
+  }
+
   const questions = test.questions || [];
   const currentQ = questions[currentIndex] || {};
   const answeredCount = Object.keys(answers).length;
@@ -275,9 +367,16 @@ export default function TestAttemptPage() {
             <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
               {/* Question metadata */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-lg">
-                  Question {currentIndex + 1} of {questions.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-lg">
+                    Question {currentIndex + 1} of {questions.length}
+                  </span>
+                  {currentQ.section && (
+                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                      {currentQ.section}
+                    </span>
+                  )}
+                </div>
 
                 <span className="text-xs font-medium text-slate-400">
                   {answers[currentQ.id] ? (
@@ -290,45 +389,14 @@ export default function TestAttemptPage() {
                 </span>
               </div>
 
-              {/* Question Text */}
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-8">
-                {currentQ.question}
-              </h2>
-
-              {/* Four Options */}
-              <div className="space-y-3.5">
-                {["A", "B", "C", "D"].map((optKey) => {
-                  const optText = currentQ.options?.[optKey];
-                  if (!optText) return null;
-                  const isSelected = answers[currentQ.id] === optKey;
-
-                  return (
-                    <button
-                      key={optKey}
-                      type="button"
-                      onClick={() => handleOptionSelect(currentQ.id, optKey)}
-                      className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 cursor-pointer ${
-                        isSelected
-                          ? "border-blue-600 bg-blue-50/70 text-blue-900 shadow-xs ring-1 ring-blue-600"
-                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 text-slate-800"
-                      }`}
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {optKey}
-                      </div>
-                      <span className="text-sm sm:text-base font-medium flex-1">
-                        {optText}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Render Question with High-Fidelity Passage, Figures & Options */}
+              <QuestionRenderer
+                question={currentQ}
+                currentIndex={currentIndex}
+                totalQuestions={questions.length}
+                selectedAnswer={answers[currentQ.id]}
+                onSelectOption={handleOptionSelect}
+              />
 
               {/* Bottom Navigation Buttons */}
               <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-100 gap-3">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getResultById, getTestById } from "../firebase";
+import QuestionFigure from "../components/QuestionFigure";
 import confetti from "canvas-confetti";
 import {
   Award,
@@ -265,6 +266,51 @@ export default function ResultPage() {
                       )}
                     </span>
                   </div>
+
+                  {/* Passage if present */}
+                  {q.passage && (
+                    <div className="p-3 sm:p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 text-slate-800 text-xs mb-3 italic">
+                      <strong className="block not-italic text-indigo-950 font-bold mb-1">
+                        Reading Passage (Questions 01–02):
+                      </strong>
+                      "{q.passage}"
+                    </div>
+                  )}
+
+                  {/* Figure diagram if present */}
+                  {q.figureType && (
+                    <div className="mb-3">
+                      <QuestionFigure figureType={q.figureType} />
+                    </div>
+                  )}
+
+                  {/* Table if present */}
+                  {q.table && (
+                    <div className="overflow-x-auto my-3">
+                      <table className="min-w-full text-xs border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+                        <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-[10px]">
+                          <tr>
+                            {q.table.headers.map((h, i) => (
+                              <th key={i} className="px-3 py-2 text-left border-b border-slate-200">
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-slate-800">
+                          {q.table.rows.map((row, rIdx) => (
+                            <tr key={rIdx}>
+                              {row.map((cell, cIdx) => (
+                                <td key={cIdx} className="px-3 py-1.5 font-medium">
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
 
                   {/* Question text */}
                   <h3 className="font-bold text-slate-900 text-base mb-4 leading-relaxed">

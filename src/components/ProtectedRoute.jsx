@@ -1,7 +1,7 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { ShieldAlert, Loader2 } from "lucide-react";
+import { ShieldAlert, Loader2, ArrowLeft } from "lucide-react";
 
 /**
  * ProtectedRoute Component
@@ -23,7 +23,6 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
 
   // Not logged in at all
   if (!isAuthenticated) {
-    // If attempting to access admin route, redirect to admin login
     if (requireAdmin) {
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
@@ -33,28 +32,22 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
   // User is logged in, but route requires Admin and user is NOT admin
   if (requireAdmin && !isAdmin) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-inner">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Administrator Access Required</h2>
-        <p className="text-slate-600 mb-6 text-sm">
-          You are currently signed in as a student (<strong>{user?.email}</strong>). This administration
-          section is restricted to certified instructors and portal administrators.
+        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Restricted Access</h2>
+        <p className="text-slate-600 mb-6 text-sm leading-relaxed">
+          You are signed in as a student (<strong>{user?.email}</strong>). Administrative controls, student records, and test authoring tools are strictly restricted to authorized portal administrators.
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="/dashboard"
-            className="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        <div className="flex items-center justify-center">
+          <Link
+            to="/dashboard"
+            className="px-6 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
           >
-            Go to Student Dashboard
-          </a>
-          <a
-            href="/admin/login"
-            className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
-          >
-            Sign in as Admin
-          </a>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Student Portal</span>
+          </Link>
         </div>
       </div>
     );

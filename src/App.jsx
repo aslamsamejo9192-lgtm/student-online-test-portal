@@ -24,6 +24,7 @@ import ManageTests from "./pages/ManageTests";
 import AddTest from "./pages/AddTest";
 import EditTest from "./pages/EditTest";
 import StudentResults from "./pages/StudentResults";
+import ManageStudents from "./pages/ManageStudents";
 
 /**
  * StartingGate ensures that when a student opens the portal at start (/),
@@ -159,6 +160,14 @@ export default function App() {
                 element={
                   <ProtectedRoute requireAdmin={true}>
                     <StudentResults />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/students"
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <ManageStudents />
                   </ProtectedRoute>
                 }
               />

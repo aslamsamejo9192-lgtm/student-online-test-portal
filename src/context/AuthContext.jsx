@@ -34,8 +34,8 @@ export function AuthProvider({ children }) {
     return loggedUser;
   };
 
-  const register = async (name, email, password, role = "student") => {
-    const registeredUser = await registerUser(name, email, password, role);
+  const register = async (name, email, password, role = "student", extraData = {}) => {
+    const registeredUser = await registerUser(name, email, password, role, extraData);
     setUser(registeredUser);
     return registeredUser;
   };
@@ -55,11 +55,17 @@ export function AuthProvider({ children }) {
     setUser((prev) => (prev ? { ...prev, ...data } : prev));
   };
 
+  const isSuperAdminUser = Boolean(
+    user &&
+    user.role === "admin" &&
+    (user.email || "").toLowerCase() === "aslamsamejo9192@gmail.com"
+  );
+
   const value = {
     user,
-    role: user?.role || null,
-    isAdmin: user?.role === "admin",
-    isStudent: user?.role === "student",
+    role: isSuperAdminUser ? "admin" : user?.role || null,
+    isAdmin: isSuperAdminUser,
+    isStudent: Boolean(user && !isSuperAdminUser),
     isAuthenticated: Boolean(user),
     loading,
     login,

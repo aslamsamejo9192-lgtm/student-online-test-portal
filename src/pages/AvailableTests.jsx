@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getTests } from "../firebase";
+import { getTests, isTestUnlocked } from "../firebase";
+import PaymentModal from "../components/PaymentModal";
 import {
   BookOpen,
   Clock,
@@ -12,15 +13,21 @@ import {
   Sparkles,
   HelpCircle,
   Award,
-  PlusCircle
+  PlusCircle,
+  Lock,
+  CreditCard,
+  CheckCircle2,
+  Smartphone
 } from "lucide-react";
 
 export default function AvailableTests() {
-  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("ALL");
+  const [activePaymentTest, setActivePaymentTest] = useState(null);
 
   useEffect(() => {
     async function loadTests() {
@@ -160,56 +167,119 @@ export default function AvailableTests() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTests.map((test) => (
-            <div
-              key={test.id}
-              className="bg-white rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 transition-all flex flex-col justify-between p-6 group"
-            >
-              <div>
-                {/* Subject & Duration tags */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60">
-                    {test.subject || "General"}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    {test.duration} Minutes
-                  </span>
+          {filteredTests.map((test) => {
+            const unlocked = isTestUnlocked(test, user);
+
+            return (
+              <div
+                key={test.id}
+                className="bg-white rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 transition-all flex flex-col justify-between p-6 group"
+              >
+                <div>
+                  {/* Subject & Duration tags */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60">
+                      {test.subject || "General"}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      {test.duration} Minutes
+                    </span>
+                  </div>
+
+                  {/* Paid / Free badge */}
+                  {test.isPaid ? (
+                    <div className="mb-2.5 flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-black bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs">
+                        <Lock className="w-3 h-3 text-amber-600" />
+                        <span>Rs. {test.price || 10} PKR</span>
+                      </span>
+
+                      <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+                        <Smartphone className="w-3 h-3 text-emerald-600" />
+                        EasyPaisa &amp; JazzCash
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mb-2.5 flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                        <span>100% Free Exam</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">Free for all students</span>
+                    </div>
+                  )}
+
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {test.title}
+                  </h3>
+
+                  <p className="text-xs text-slate-600 line-clamp-3 mb-6 leading-relaxed">
+                    {test.description || "Practice assessment designed to evaluate core knowledge and accuracy under timed conditions."}
+                  </p>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {test.title}
-                </h3>
-
-                <p className="text-xs text-slate-600 line-clamp-3 mb-6 leading-relaxed">
-                  {test.description || "Practice assessment designed to evaluate core knowledge and accuracy under timed conditions."}
-                </p>
-              </div>
-
-              <div>
-                <div className="grid grid-cols-2 gap-2 py-3 border-y border-slate-100 text-xs text-slate-500 mb-4 bg-slate-50/50 rounded-xl px-3">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-blue-500" />
-                    <span>{test.questions?.length || 0} Questions</span>
+                <div>
+                  <div className="grid grid-cols-2 gap-2 py-3 border-y border-slate-100 text-xs text-slate-500 mb-4 bg-slate-50/50 rounded-xl px-3">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-blue-500" />
+                      <span>{test.questions?.length || 0} Questions</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Award className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Pass: {test.passingPercentage}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <Award className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Pass: {test.passingPercentage}%</span>
-                  </div>
+
+                  {test.isPaid && !unlocked ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActivePaymentTest(test)}
+                        className="py-2.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>Pay Rs. {test.price || 10}</span>
+                      </button>
+
+                      <Link
+                        to={`/test/${test.id}`}
+                        className="py-2.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all flex items-center justify-center gap-1"
+                      >
+                        <span>Details</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <Link
+                      to={`/test/${test.id}`}
+                      className="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group-hover:bg-blue-600"
+                    >
+                      {test.isPaid && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                      )}
+                      <span>{test.isPaid ? "Attempt Unlocked Test" : "Start Test Attempt"}</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  )}
                 </div>
-
-                <Link
-                  to={`/test/${test.id}`}
-                  className="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group-hover:bg-blue-600"
-                >
-                  <span>Start Test Attempt</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
+
+      {/* Global Payment Modal */}
+      <PaymentModal
+        test={activePaymentTest}
+        isOpen={Boolean(activePaymentTest)}
+        onClose={() => setActivePaymentTest(null)}
+        onSuccess={() => {
+          const targetId = activePaymentTest?.id;
+          setActivePaymentTest(null);
+          if (targetId) navigate(`/test/${targetId}`);
+        }}
+      />
     </div>
   );
 }

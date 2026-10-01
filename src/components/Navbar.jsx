@@ -15,7 +15,8 @@ import {
   FileCheck,
   Flame,
   CheckCircle2,
-  Database
+  Database,
+  Users
 } from "lucide-react";
 
 export default function Navbar() {
@@ -90,20 +91,6 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 )}
-
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                      isActive("/admin")
-                        ? "text-indigo-700 bg-indigo-50 font-semibold"
-                        : "text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50/50"
-                    }`}
-                  >
-                    <Shield className="w-4 h-4 text-indigo-600" />
-                    Admin Console
-                  </Link>
-                )}
               </>
             ) : (
               <span className="text-xs text-slate-500 font-medium px-2">
@@ -174,6 +161,14 @@ export default function Navbar() {
                           Admin Dashboard
                         </Link>
                         <Link
+                          to="/admin/students"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                        >
+                          <Users className="w-4 h-4 text-slate-400" />
+                          Registered Students
+                        </Link>
+                        <Link
                           to="/admin/tests"
                           onClick={() => setUserDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
@@ -217,13 +212,6 @@ export default function Navbar() {
                   className="px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                 >
                   Login
-                </Link>
-                <Link
-                  to="/admin/login"
-                  className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 border border-indigo-200 transition-colors ml-1"
-                  title="Admin Portal"
-                >
-                  Admin
                 </Link>
               </div>
             )}
@@ -298,6 +286,14 @@ export default function Navbar() {
                   Admin Dashboard
                 </Link>
                 <Link
+                  to="/admin/students"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                >
+                  <Users className="w-4 h-4 text-indigo-600" />
+                  Registered Students
+                </Link>
+                <Link
                   to="/admin/tests"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
@@ -350,23 +346,6 @@ export default function Navbar() {
                   <UserPlus className="w-4 h-4" />
                   Register
                 </Link>
-                <div className="col-span-2 mt-1 py-2 px-3 text-xs font-semibold text-indigo-700 border border-indigo-200 rounded-xl bg-indigo-50/50 flex items-center justify-center gap-2">
-                  <Link
-                    to="/admin/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="hover:underline"
-                  >
-                    Admin Login
-                  </Link>
-                  <span>•</span>
-                  <Link
-                    to="/admin/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="hover:underline"
-                  >
-                    Admin Register
-                  </Link>
-                </div>
               </div>
             )}
           </div>

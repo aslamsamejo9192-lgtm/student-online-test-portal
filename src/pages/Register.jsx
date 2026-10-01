@@ -46,8 +46,12 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await register(name.trim(), email.trim(), password, "student");
-      navigate("/dashboard", { replace: true });
+      const registeredUser = await register(name.trim(), email.trim(), password, "student", {});
+      if (registeredUser?.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err) {
       setError(err.message || "Failed to register account.");
     } finally {
@@ -64,16 +68,16 @@ export default function Register() {
             <GraduationCap className="w-7 h-7" />
           </div>
           <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold mb-2">
-            Step 1: Student Registration
+            Student Portal
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Create Student Account</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Create Account</h1>
           <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
-            Registration is required to access examination papers, take timed tests, and view results.
+            Create your account to access online tests and view your results.
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 sm:p-8">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 sm:p-8">
           {error && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
@@ -94,7 +98,7 @@ export default function Register() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder="Enter your full name"
                   required
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
                 />
@@ -132,7 +136,7 @@ export default function Register() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder="Min 6 characters"
                   required
                   minLength={6}
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
@@ -160,10 +164,6 @@ export default function Register() {
               </div>
             </div>
 
-            <div className="text-xs text-slate-500 py-1">
-              By creating an account, your profile will be securely registered in Study Hub's database.
-            </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -172,7 +172,7 @@ export default function Register() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Registering Account...</span>
+                  <span>Creating Account...</span>
                 </>
               ) : (
                 <>
@@ -185,17 +185,11 @@ export default function Register() {
         </div>
 
         {/* Footer links */}
-        <div className="mt-6 text-center space-y-2">
+        <div className="mt-6 text-center">
           <p className="text-xs text-slate-600">
             Already have an account?{" "}
             <Link to="/login" className="font-semibold text-blue-600 hover:underline">
               Sign in
-            </Link>
-          </p>
-          <p className="text-xs text-slate-500">
-            Are you an administrator?{" "}
-            <Link to="/admin/register" className="font-semibold text-indigo-600 hover:underline">
-              Admin Registration
             </Link>
           </p>
         </div>

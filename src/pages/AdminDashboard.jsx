@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getTests, getAllResults, getAllStudents } from "../firebase";
+import { getTests, getAllResults, getAllStudents, getPayments } from "../firebase";
+import AdminTestAgent from "../components/AdminTestAgent";
 import {
   Users,
   BookOpen,
@@ -13,27 +14,33 @@ import {
   Clock,
   Sparkles,
   ChevronRight,
-  BarChart3
+  BarChart3,
+  CreditCard,
+  Smartphone,
+  CheckCircle2
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
   const [tests, setTests] = useState([]);
   const [results, setResults] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadAdminData() {
       try {
         setLoading(true);
-        const [testsData, resultsData, studentsData] = await Promise.all([
+        const [testsData, resultsData, studentsData, paymentsData] = await Promise.all([
           getTests(),
           getAllResults(),
-          getAllStudents()
+          getAllStudents(),
+          getPayments()
         ]);
         setTests(testsData || []);
         setResults(resultsData || []);
         setStudents(studentsData || []);
+        setPayments(paymentsData || []);
       } catch (err) {
         console.error("Admin dashboard load error:", err);
       } finally {
@@ -46,6 +53,7 @@ export default function AdminDashboard() {
   const totalStudents = students.length;
   const totalTests = tests.length;
   const totalAttempts = results.length;
+  const totalRevenue = payments.reduce((acc, p) => acc + (Number(p.amount) || 10), 0);
 
   const averageScore =
     totalAttempts > 0
@@ -74,6 +82,13 @@ export default function AdminDashboard() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
+              to="/admin/students"
+              className="px-4 py-2.5 rounded-xl font-bold bg-white text-indigo-900 hover:bg-indigo-50 shadow-md text-xs flex items-center gap-1.5 transition-colors"
+            >
+              <Users className="w-4 h-4 text-indigo-600" />
+              <span>Registered Students ({totalStudents})</span>
+            </Link>
+            <Link
               to="/admin/tests/add"
               className="px-4 py-2.5 rounded-xl font-bold bg-indigo-500 hover:bg-indigo-400 text-white shadow-md text-xs flex items-center gap-1.5 transition-colors"
             >
@@ -91,21 +106,34 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Admin Exclusive AI PDF & Text to Live Test Agent */}
+      <AdminTestAgent
+        onTestPublished={(newTest) => {
+          setTests((prev) => [newTest, ...prev]);
+        }}
+      />
+
       {/* 4 Cards: Total Students, Total Tests, Total Attempts, Average Score */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {/* Total Students */}
-        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
+        <Link
+          to="/admin/students"
+          className="p-5 rounded-3xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group cursor-pointer block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600">
               Total Students
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center transition-colors">
               <Users className="w-5 h-5" />
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-slate-900">{totalStudents}</div>
-          <p className="text-xs text-slate-400 mt-1">Enrolled learners</p>
-        </div>
+          <p className="text-xs text-indigo-600 font-semibold mt-1 flex items-center gap-1">
+            <span>View Student Roster</span>
+            <ChevronRight className="w-3 h-3" />
+          </p>
+        </Link>
 
         {/* Total Tests */}
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
@@ -135,6 +163,20 @@ export default function AdminDashboard() {
           <p className="text-xs text-slate-400 mt-1">Submissions graded</p>
         </div>
 
+        {/* Collected Fees Revenue */}
+        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Exam Fees Revenue
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <CreditCard className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-emerald-700">Rs. {totalRevenue}</div>
+          <p className="text-xs text-slate-400 mt-1">{payments.length} verified transactions</p>
+        </div>
+
         {/* Average Score */}
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between mb-3">
@@ -147,6 +189,201 @@ export default function AdminDashboard() {
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-slate-900">{averageScore}%</div>
           <p className="text-xs text-slate-400 mt-1">Portal-wide performance</p>
+        </div>
+      </div>
+
+      {/* EasyPaisa & JazzCash Live Payments Stream */}
+      <div className="mb-10 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                EasyPaisa &amp; JazzCash Fee Collections (Rs. 10/Test)
+              </h2>
+              <p className="text-xs text-slate-500">
+                Receiver: Aslam Samejo / Medico Engineer (03700113837)
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            {payments.length} Payments Received
+          </span>
+        </div>
+
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+          {payments.length === 0 ? (
+            <div className="p-8 text-center">
+              <CreditCard className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-700">No payment transactions recorded yet</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                When students verify EasyPaisa or JazzCash transactions for test attempts, they will show up here.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-600">
+                <thead className="bg-slate-50/80 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-100">
+                  <tr>
+                    <th className="px-5 py-3.5">Student / Sender</th>
+                    <th className="px-5 py-3.5">Contact Phone</th>
+                    <th className="px-5 py-3.5">Test Assessment</th>
+                    <th className="px-5 py-3.5">Method</th>
+                    <th className="px-5 py-3.5 font-mono">Trx ID (TID)</th>
+                    <th className="px-5 py-3.5">Amount</th>
+                    <th className="px-5 py-3.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {payments.slice(0, 8).map((pay) => (
+                    <tr key={pay.id} className="hover:bg-slate-50/50">
+                      <td className="px-5 py-3.5 font-bold text-slate-900">
+                        {pay.studentName || "Student"}
+                        {pay.studentRollNo && (
+                          <span className="block text-[10px] font-normal text-slate-400">
+                            Roll: {pay.studentRollNo}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 font-mono text-slate-700">
+                        {pay.studentPhone || "N/A"}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-700 truncate max-w-[180px]">
+                        {pay.testTitle || "MDCAT Assessment"}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          pay.method === "EasyPaisa"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-amber-50 text-amber-800 border border-amber-200"
+                        }`}>
+                          {pay.method || "EasyPaisa"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 font-mono font-bold text-slate-900">
+                        {pay.transactionId || "N/A"}
+                      </td>
+                      <td className="px-5 py-3.5 font-bold text-emerald-600">
+                        Rs. {pay.amount || 10}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>{pay.status || "Verified"}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Newly Registered Students Live Stream */}
+      <div className="mb-10 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+              <Users className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Incoming Student Registrations
+              </h2>
+              <p className="text-xs text-slate-500">
+                Live stream of students who registered to take online examinations
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/admin/students"
+            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+          >
+            <span>Manage All Students ({students.length})</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+          {loading ? (
+            <div className="p-8 text-center text-xs text-slate-400">Loading student registrations...</div>
+          ) : students.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-500">
+              No students have registered yet. As soon as a student registers, their profile appears here automatically for administration.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase font-semibold">
+                  <tr>
+                    <th className="px-5 py-3.5">Student Name</th>
+                    <th className="px-5 py-3.5">Email Address</th>
+                    <th className="px-5 py-3.5">Roll No / ID</th>
+                    <th className="px-5 py-3.5">Contact / Department</th>
+                    <th className="px-5 py-3.5">Registered At</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {students.slice(0, 5).map((student) => (
+                    <tr key={student.id || student.uid} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3.5 font-bold text-slate-900 flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                          {student.name ? student.name.charAt(0).toUpperCase() : "S"}
+                        </div>
+                        <span>{student.name}</span>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600">{student.email}</td>
+                      <td className="px-5 py-3.5 font-mono text-slate-700">
+                        {student.rollNo ? (
+                          <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold text-[11px]">
+                            {student.rollNo}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600">
+                        {student.phone || student.department ? (
+                          <span>{student.phone || ""} {student.department ? `(${student.department})` : ""}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">General</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-500">
+                        {student.createdAt
+                          ? new Date(student.createdAt).toLocaleString([], {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })
+                          : "Recently"}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {student.status || "Active"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <Link
+                          to="/admin/students"
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                        >
+                          View Full Record
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 

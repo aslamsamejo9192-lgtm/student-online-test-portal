@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createTest } from "../firebase";
+import AdminTestAgent from "../components/AdminTestAgent";
 import {
   PlusCircle,
   Trash2,
@@ -172,6 +173,9 @@ export default function AddTest() {
           </div>
         </div>
       </div>
+
+      {/* Admin Exclusive AI PDF & Text to Live Test Agent */}
+      <AdminTestAgent />
 
       {error && (
         <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 flex items-start gap-2.5">

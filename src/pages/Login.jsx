@@ -196,21 +196,11 @@ export default function Login() {
         </div>
 
         {/* Footer links */}
-        <div className="mt-6 text-center space-y-2">
+        <div className="mt-6 text-center">
           <p className="text-xs text-slate-600">
             Don't have an account yet?{" "}
             <Link to="/register" className="font-semibold text-blue-600 hover:underline">
-              Register as Student
-            </Link>
-          </p>
-          <p className="text-xs text-slate-400">
-            Are you an administrator?{" "}
-            <Link to="/admin/login" className="font-medium text-indigo-600 hover:underline">
-              Admin Login
-            </Link>
-            {" "}•{" "}
-            <Link to="/admin/register" className="font-medium text-indigo-600 hover:underline">
-              Admin Registration
+              Create Account
             </Link>
           </p>
         </div>

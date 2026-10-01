@@ -37,7 +37,7 @@ export default function AdminLogin() {
       const user = await login(email, password);
       if (user.role !== "admin") {
         setError(
-          "Access denied: This user account does not possess administrator privileges. Please sign in with an admin credential."
+          "Access denied: This account belongs to a Student. Students cannot access the Administrator Console. Please use the Student Portal."
         );
         return;
       }
@@ -133,16 +133,10 @@ export default function AdminLogin() {
 
         {/* Footer */}
         <div className="mt-6 text-center space-y-2">
-          <p className="text-xs text-slate-600">
-            Need an administrator account?{" "}
-            <Link to="/admin/register" className="font-semibold text-indigo-600 hover:underline">
-              Register as Admin
-            </Link>
-          </p>
           <p className="text-xs text-slate-500">
-            Not an administrator?{" "}
+            Are you a student?{" "}
             <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-              Switch to Student Login
+              Go to Student Login
             </Link>
           </p>
         </div>
