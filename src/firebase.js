@@ -72,31 +72,49 @@ const LS_KEYS = {
   CURRENT_USER: "studyhub_curr_user",
   TESTS: "studyhub_tests",
   RESULTS: "studyhub_results",
-  PAYMENTS: "studyhub_payments"
+  PAYMENTS: "studyhub_payments",
+  CLEAN_SLATE: "studyhub_clean_slate_v1"
 };
 
 function initLocalStorage() {
   if (typeof window === "undefined") return;
 
-  // Clean up any legacy demo tests
+  // Perform one-time clean slate reset to remove all old tests, student accounts, results, and payments
+  if (localStorage.getItem(LS_KEYS.CLEAN_SLATE) !== "done") {
+    localStorage.setItem(LS_KEYS.TESTS, JSON.stringify([]));
+    localStorage.setItem(LS_KEYS.RESULTS, JSON.stringify([]));
+    localStorage.setItem(LS_KEYS.PAYMENTS, JSON.stringify([]));
+    localStorage.setItem(
+      LS_KEYS.USERS,
+      JSON.stringify([
+        {
+          uid: "admin-aslam-samejo",
+          name: "Aslam Samejo",
+          email: ADMIN_EMAIL,
+          role: "admin",
+          password: ADMIN_PASSWORD,
+          status: "Active",
+          createdAt: new Date().toISOString()
+        }
+      ])
+    );
+
+    const cachedUser = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT_USER) || "null");
+    if (cachedUser && (cachedUser.email || "").toLowerCase() !== ADMIN_EMAIL) {
+      localStorage.removeItem(LS_KEYS.CURRENT_USER);
+    }
+
+    localStorage.setItem(LS_KEYS.CLEAN_SLATE, "done");
+  }
+
+  // Ensure storage arrays exist and remove any pre-seeded demo tests
   const existingTests = JSON.parse(localStorage.getItem(LS_KEYS.TESTS) || "[]");
   const cleanedTests = existingTests.filter(
-    (t) => t.id !== "mbbs-anatomy-101" && t.id !== "cs-web-dev-201"
+    (t) =>
+      t.id !== "mbbs-anatomy-101" &&
+      t.id !== "cs-web-dev-201" &&
+      t.id !== MEDICO_MDCAT_TEST.id
   );
-
-  // Seed the 115-MCQ Medico Engineer MDCAT Mock Exam if not present or outdated
-  const medicoIndex = cleanedTests.findIndex((t) => t.id === MEDICO_MDCAT_TEST.id);
-  if (medicoIndex === -1) {
-    cleanedTests.unshift(MEDICO_MDCAT_TEST);
-  } else {
-    // Keep test updated with latest status (free exam) and full questions
-    cleanedTests[medicoIndex] = {
-      ...cleanedTests[medicoIndex],
-      ...MEDICO_MDCAT_TEST,
-      isPaid: false,
-      price: 0
-    };
-  }
   localStorage.setItem(LS_KEYS.TESTS, JSON.stringify(cleanedTests));
 
   // Initialize payments storage if empty
@@ -936,7 +954,7 @@ function formatAuthError(error) {
     case "auth/operation-not-allowed":
       return "Email/password accounts are not enabled. Please enable them in your Firebase console.";
     case "auth/weak-password":
-      return "Password is too weak. Please use at least 6 characters.";
+      return "Password is too weak. Please choose a stronger password.";
     case "auth/user-disabled":
       return "This user account has been disabled.";
     case "auth/user-not-found":

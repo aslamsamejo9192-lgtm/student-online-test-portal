@@ -319,7 +319,7 @@ export default function TestAttemptPage() {
   return (
     <div className="min-h-screen bg-slate-50/80 pb-16">
       {/* Sticky Header with Title and Countdown Timer */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+      <div className="sticky top-16 z-30 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -518,7 +518,7 @@ export default function TestAttemptPage() {
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
               <HelpCircle className="w-6 h-6" />
@@ -570,7 +570,7 @@ export default function TestAttemptPage() {
 
       {/* Auto-submit warning overlay if time expires */}
       {autoSubmitTriggered && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 p-4 text-white">
           <div className="text-center space-y-3">
             <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
               <Clock className="w-8 h-8 animate-spin" />

@@ -46,8 +46,8 @@ export default function AdminRegister() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters in length.");
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
     if (password !== confirmPassword) {
@@ -170,9 +170,8 @@ export default function AdminRegister() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 6 characters"
+                    placeholder="Enter password"
                     required
-                    minLength={6}
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
                   />
                 </div>

@@ -102,7 +102,7 @@ export default function PaymentModal({ test, isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 animate-fade-in overflow-y-auto">
       <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 relative">
@@ -126,7 +126,7 @@ export default function PaymentModal({ test, isOpen, onClose, onSuccess }) {
           </p>
 
           {/* Price Tag Badge */}
-          <div className="mt-4 flex items-baseline gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl w-fit border border-white/15">
+          <div className="mt-4 flex items-baseline gap-2 bg-white/10 px-4 py-2.5 rounded-2xl w-fit border border-white/20">
             <span className="text-xs text-slate-300 uppercase tracking-wider font-semibold">Test Fee:</span>
             <span className="text-2xl sm:text-3xl font-black text-amber-400">Rs. {test.price || 10}</span>
             <span className="text-xs text-slate-300">PKR Only</span>

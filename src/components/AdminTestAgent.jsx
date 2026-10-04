@@ -193,26 +193,31 @@ export default function AdminTestAgent({ onTestPublished }) {
   };
 
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-500/30 shadow-xl p-6 sm:p-8 mb-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-indigo-500/20">
-        <div className="flex items-start gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-1.5">
-              <span>Admin Exclusive AI Agent</span>
+    <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-500/40 shadow-2xl shadow-indigo-950/50 mb-8 overflow-hidden">
+      {/* Top Colorful Gradient Accent */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-teal-400 via-indigo-500 to-purple-500"></div>
+
+      <div className="p-6 sm:p-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-indigo-500/20">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 shrink-0">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-              AI PDF &amp; Text to Live Test Agent
-            </h2>
-            <p className="text-xs sm:text-sm text-indigo-200/80 mt-0.5">
-              Koi bhi PDF file, image, ya MCQs text dein — yeh Agent khud usay online test mein convert kar ke foran LIVE kar dega.
-            </p>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-1.5">
+                <Sparkles className="w-3 h-3 text-emerald-300" />
+                <span>Admin Exclusive AI Agent</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+                AI PDF &amp; Text to Live Test Agent
+              </h2>
+              <p className="text-xs sm:text-sm text-indigo-200/90 mt-0.5">
+                Koi bhi PDF file, image, ya MCQs text dein — yeh Agent khud usay online test mein convert kar ke foran LIVE kar dega.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Error Alert */}
       {error && (
@@ -480,6 +485,7 @@ export default function AdminTestAgent({ onTestPublished }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

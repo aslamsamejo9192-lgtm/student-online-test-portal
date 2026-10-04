@@ -119,7 +119,7 @@ export default function ResultPage() {
       >
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wider uppercase backdrop-blur-xs">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-bold tracking-wider uppercase border border-white/25">
               {isPass ? <Sparkles className="w-3.5 h-3.5 text-amber-200" /> : <XCircle className="w-3.5 h-3.5" />}
               <span>Examination Status: {result.status}</span>
             </div>
@@ -134,7 +134,7 @@ export default function ResultPage() {
           </div>
 
           {/* Big Score Box */}
-          <div className="bg-white/15 backdrop-blur-md rounded-2xl p-5 text-center min-w-[160px] border border-white/20">
+          <div className="bg-white/20 rounded-2xl p-5 text-center min-w-[160px] border border-white/30">
             <span className="text-xs uppercase tracking-wider font-semibold text-white/80 block">
               Final Score
             </span>
@@ -339,7 +339,7 @@ export default function ResultPage() {
                           className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 ${style}`}
                         >
                           <span
-                            className={`w-6 h-6 rounded-lg font-bold flex items-center justify-center shrink-0 ${
+                            className={`w-6 h-6 rounded-full aspect-square font-bold flex items-center justify-center shrink-0 ${
                               isThisCorrect
                                 ? "bg-emerald-600 text-white"
                                 : isThisStudent

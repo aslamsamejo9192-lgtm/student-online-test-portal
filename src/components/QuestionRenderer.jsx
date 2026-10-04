@@ -76,20 +76,20 @@ export default function QuestionRenderer({
           const isCorrect = isReview && (correctAnswer || question.correctAnswer) === optKey;
           const isWrongStudentPick = isReview && isSelected && !isCorrect;
 
-          let btnClass = "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 text-slate-800";
-          let badgeClass = "bg-slate-100 text-slate-600";
+          let btnClass = "border-slate-200/90 hover:border-indigo-300 hover:bg-indigo-50/30 text-slate-800 bg-white";
+          let badgeClass = "bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700";
 
           if (isReview) {
             if (isCorrect) {
-              btnClass = "border-emerald-500 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-500 font-medium";
-              badgeClass = "bg-emerald-600 text-white";
+              btnClass = "border-emerald-500 bg-emerald-50/80 text-emerald-950 ring-2 ring-emerald-500/30 font-semibold shadow-xs";
+              badgeClass = "bg-emerald-600 text-white shadow-xs";
             } else if (isWrongStudentPick) {
-              btnClass = "border-rose-400 bg-rose-50 text-rose-950 font-medium";
-              badgeClass = "bg-rose-600 text-white";
+              btnClass = "border-rose-400 bg-rose-50/80 text-rose-950 ring-2 ring-rose-400/30 font-semibold shadow-xs";
+              badgeClass = "bg-rose-600 text-white shadow-xs";
             }
           } else if (isSelected) {
-            btnClass = "border-blue-600 bg-blue-50/80 text-blue-950 shadow-xs ring-1 ring-blue-600 font-medium";
-            badgeClass = "bg-blue-600 text-white";
+            btnClass = "border-indigo-600 bg-gradient-to-r from-blue-50/90 via-indigo-50/90 to-purple-50/70 text-indigo-950 shadow-md shadow-indigo-500/10 ring-2 ring-indigo-500/30 font-semibold";
+            badgeClass = "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xs";
           }
 
           return (
@@ -98,26 +98,26 @@ export default function QuestionRenderer({
               type="button"
               disabled={isReview}
               onClick={() => onSelectOption && onSelectOption(question.id, optKey)}
-              className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all flex items-start sm:items-center gap-3.5 ${btnClass} ${
-                isReview ? "cursor-default" : "cursor-pointer"
+              className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border transition-all flex items-start sm:items-center gap-3.5 group ${btnClass} ${
+                isReview ? "cursor-default" : "cursor-pointer hover:scale-[1.005] active:scale-[0.995]"
               }`}
             >
               <div
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 transition-colors ${badgeClass}`}
+                className={`w-8 h-8 rounded-full aspect-square font-bold text-xs flex items-center justify-center shrink-0 transition-all ${badgeClass}`}
               >
                 {optKey}
               </div>
-              <span className="text-xs sm:text-sm font-medium flex-1 pt-0.5 sm:pt-0 leading-snug">
+              <span className="text-xs sm:text-sm font-medium flex-1 pt-0.5 sm:pt-0 leading-relaxed">
                 {optText}
               </span>
 
               {isReview && isCorrect && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-extrabold bg-emerald-100 text-emerald-800 shrink-0 border border-emerald-200 shadow-2xs">
                   Correct Answer
                 </span>
               )}
               {isReview && isWrongStudentPick && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-rose-100 text-rose-800 shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-extrabold bg-rose-100 text-rose-800 shrink-0 border border-rose-200 shadow-2xs">
                   Your Answer
                 </span>
               )}

@@ -44,20 +44,23 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all">
+    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
+      {/* Top Colorful Accent Strip */}
+      <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-pink-500"></div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-full aspect-square shrink-0 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
                 <GraduationCap className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
-                  STUDY<span className="text-blue-600">HUB</span>
+                <span className="font-black text-xl tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  STUDY<span className="text-indigo-600">HUB</span>
                 </span>
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold -mt-1">
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold -mt-1">
                   Online Test Portal
                 </span>
               </div>
@@ -200,18 +203,18 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <Link
                   to="/register"
-                  className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all hover:shadow-blue-500/30"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:via-indigo-500 hover:to-violet-500 shadow-md shadow-indigo-500/25 transition-all hover:scale-105"
                 >
-                  Student Registration
+                  Create Account
                 </Link>
                 <Link
                   to="/login"
-                  className="px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all border border-slate-200"
                 >
-                  Login
+                  Sign In
                 </Link>
               </div>
             )}

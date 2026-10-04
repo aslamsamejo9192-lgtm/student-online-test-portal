@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getTests, getAllResults, getAllStudents, getPayments } from "../firebase";
 import AdminTestAgent from "../components/AdminTestAgent";
+import { useAuth } from "../context/AuthContext";
 import {
   Users,
   BookOpen,
@@ -17,10 +18,16 @@ import {
   BarChart3,
   CreditCard,
   Smartphone,
-  CheckCircle2
+  CheckCircle2,
+  Lock,
+  LayoutDashboard,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
+  const [showAgent, setShowAgent] = useState(false);
   const [students, setStudents] = useState([]);
   const [tests, setTests] = useState([]);
   const [results, setResults] = useState([]);
@@ -106,89 +113,159 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Admin Exclusive AI PDF & Text to Live Test Agent */}
-      <AdminTestAgent
-        onTestPublished={(newTest) => {
-          setTests((prev) => [newTest, ...prev]);
-        }}
-      />
+      {/* Admin Panel Box (Placed right under Instructor Command Dashboard box) */}
+      <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-950/20 border border-slate-800 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full aspect-square bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-black tracking-tight text-white">
+                  Admin Panel
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                  <Lock className="w-2.5 h-2.5" />
+                  Only Visible to You
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Signed in as Super Admin: <span className="text-indigo-300 font-semibold">{user?.email || "aslamsamejo9192@gmail.com"}</span>
+              </p>
+            </div>
+          </div>
 
-      {/* 4 Cards: Total Students, Total Tests, Total Attempts, Average Score */}
+          <button
+            type="button"
+            onClick={() => setShowAgent(!showAgent)}
+            className="px-4 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all cursor-pointer self-start md:self-auto"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI PDF / Text to Live Test Agent</span>
+            {showAgent ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {showAgent && (
+          <div className="mb-6 pt-4 border-t border-slate-800">
+            <AdminTestAgent
+              onTestPublished={(newTest) => {
+                setTests((prev) => [newTest, ...prev]);
+              }}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Link
+            to="/admin"
+            className="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-bold transition-all bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-500/20"
+          >
+            <LayoutDashboard className="w-4 h-4 text-white shrink-0" />
+            <span>Admin Dashboard</span>
+          </Link>
+
+          <Link
+            to="/admin/tests"
+            className="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-bold transition-all bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800 hover:border-indigo-500/50 hover:text-white"
+          >
+            <BookOpen className="w-4 h-4 text-indigo-400 shrink-0" />
+            <span>Manage Tests</span>
+          </Link>
+
+          <Link
+            to="/admin/tests/add"
+            className="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-bold transition-all bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800 hover:border-indigo-500/50 hover:text-white"
+          >
+            <PlusCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Create New Test</span>
+          </Link>
+
+          <Link
+            to="/admin/students"
+            className="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-bold transition-all bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800 hover:border-indigo-500/50 hover:text-white"
+          >
+            <Users className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Registered Students</span>
+          </Link>
+
+          <Link
+            to="/admin/results"
+            className="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-bold transition-all bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800 hover:border-indigo-500/50 hover:text-white"
+          >
+            <FileCheck className="w-4 h-4 text-sky-400 shrink-0" />
+            <span>Student Results</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* 4 Cards: Total Students, Total Tests, Total Attempts, Exam Fees Revenue - BEST LOOKS COLORFUL BOXES */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {/* Total Students */}
         <Link
           to="/admin/students"
-          className="p-5 rounded-3xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group cursor-pointer block"
+          className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 hover:border-indigo-400 card-hover-lift shadow-md shadow-slate-100 transition-all group cursor-pointer block relative overflow-hidden"
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600">
+          <div className="h-1.5 w-full absolute top-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors leading-tight">
               Total Students
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center transition-colors">
-              <Users className="w-5 h-5" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full aspect-square shrink-0 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover:scale-110 transition-transform">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-slate-900">{totalStudents}</div>
-          <p className="text-xs text-indigo-600 font-semibold mt-1 flex items-center gap-1">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900">{totalStudents}</div>
+          <p className="text-xs text-indigo-600 font-bold mt-1.5 flex items-center gap-1">
             <span>View Student Roster</span>
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </p>
         </Link>
 
         {/* Total Tests */}
-        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/90 shadow-md shadow-slate-100 hover:border-purple-400 card-hover-lift transition-all relative overflow-hidden group">
+          <div className="h-1.5 w-full absolute top-0 left-0 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
               Total Tests
             </span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <BookOpen className="w-5 h-5" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full aspect-square shrink-0 bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-md shadow-purple-500/25 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-slate-900">{totalTests}</div>
-          <p className="text-xs text-slate-400 mt-1">Published exams</p>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900">{totalTests}</div>
+          <p className="text-xs text-slate-400 font-medium mt-1.5">Published exams</p>
         </div>
 
         {/* Total Attempts */}
-        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/90 shadow-md shadow-slate-100 hover:border-teal-400 card-hover-lift transition-all relative overflow-hidden group">
+          <div className="h-1.5 w-full absolute top-0 left-0 bg-gradient-to-r from-teal-500 to-emerald-500"></div>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
               Total Attempts
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <FileCheck className="w-5 h-5" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full aspect-square shrink-0 bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-teal-500/25 group-hover:scale-110 transition-transform">
+              <FileCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-slate-900">{totalAttempts}</div>
-          <p className="text-xs text-slate-400 mt-1">Submissions graded</p>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900">{totalAttempts}</div>
+          <p className="text-xs text-slate-400 font-medium mt-1.5">Submissions graded</p>
         </div>
 
         {/* Collected Fees Revenue */}
-        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/90 shadow-md shadow-slate-100 hover:border-amber-400 card-hover-lift transition-all relative overflow-hidden group">
+          <div className="h-1.5 w-full absolute top-0 left-0 bg-gradient-to-r from-amber-500 to-emerald-500"></div>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
               Exam Fees Revenue
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CreditCard className="w-5 h-5" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full aspect-square shrink-0 bg-gradient-to-tr from-amber-500 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-amber-500/25 group-hover:scale-110 transition-transform">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-emerald-700">Rs. {totalRevenue}</div>
-          <p className="text-xs text-slate-400 mt-1">{payments.length} verified transactions</p>
-        </div>
-
-        {/* Average Score */}
-        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Average Score
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-slate-900">{averageScore}%</div>
-          <p className="text-xs text-slate-400 mt-1">Portal-wide performance</p>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-600">Rs. {totalRevenue} PKR</div>
+          <p className="text-xs text-slate-400 font-medium mt-1.5">{payments.length} verified transactions</p>
         </div>
       </div>
 
