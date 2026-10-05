@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getTests, getUserResults } from "../firebase";
+import SubjectBoxes from "../components/SubjectBoxes";
 import {
   BookOpen,
   CheckCircle2,
@@ -159,6 +160,9 @@ export default function StudentDashboard() {
           <p className="text-xs font-medium text-slate-500 mt-1">Personal record</p>
         </div>
       </div>
+
+      {/* 4 Subject Category Cards (Biology, Chemistry, Physics, English) & Class 11/12 Preparation */}
+      <SubjectBoxes embedded />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Recent Test Attempts */}

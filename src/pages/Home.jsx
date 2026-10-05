@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getTests } from "../firebase";
+import SubjectBoxes from "../components/SubjectBoxes";
 import {
   GraduationCap,
   ArrowRight,
@@ -135,6 +136,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 4 Subject Category Cards (Biology, Chemistry, Physics, English) & Class 11/12 Preparation */}
+      <SubjectBoxes />
 
       {/* Attractive Educational Features Section - 4 COLORFUL FEATURE BOXES */}
       <section className="py-16 md:py-24 bg-white relative">

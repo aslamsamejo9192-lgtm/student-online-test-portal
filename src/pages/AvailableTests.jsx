@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getTests, isTestUnlocked } from "../firebase";
 import PaymentModal from "../components/PaymentModal";
+import SubjectBoxes from "../components/SubjectBoxes";
 import {
   BookOpen,
   Clock,
@@ -128,6 +129,9 @@ export default function AvailableTests() {
           ))}
         </div>
       </div>
+
+      {/* 4 Subject Category Cards (Biology, Chemistry, Physics, English) & Class 11/12 Preparation */}
+      <SubjectBoxes embedded />
 
       {/* Tests Grid */}
       {loading ? (
