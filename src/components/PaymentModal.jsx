@@ -32,7 +32,7 @@ export default function PaymentModal({ test, isOpen, onClose, onSuccess }) {
   const paymentAccount = {
     easypaisa: {
       name: "EasyPaisa",
-      title: "Aslam Samejo / Medico Engineer",
+      title: "Medico Engineer",
       number: "03700113837",
       color: "emerald",
       badge: "EasyPaisa Mobile Account",
@@ -40,7 +40,7 @@ export default function PaymentModal({ test, isOpen, onClose, onSuccess }) {
     },
     jazzcash: {
       name: "JazzCash",
-      title: "Aslam Samejo / Medico Engineer",
+      title: "Medico Engineer",
       number: "03700113837",
       color: "amber",
       badge: "JazzCash Mobile Account",

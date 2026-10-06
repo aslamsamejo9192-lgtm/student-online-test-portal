@@ -43,6 +43,53 @@ export default function AdminTestAgent({ onTestPublished }) {
   const [previewTest, setPreviewTest] = useState(null);
   const [publishedTest, setPublishedTest] = useState(null);
 
+  // Gemini API key state & modal
+  const [keyConfig, setKeyConfig] = useState({ hasGeminiKey: false, keyPreview: "" });
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [newApiKey, setNewApiKey] = useState("");
+  const [keySaving, setKeySaving] = useState(false);
+  const [keyMessage, setKeyMessage] = useState("");
+
+  useEffect(() => {
+    async function checkKeyConfig() {
+      try {
+        const res = await fetch("/api/agent/config");
+        if (res.ok) {
+          const data = await res.json();
+          setKeyConfig(data);
+        }
+      } catch (e) {
+        console.error("Config check error:", e);
+      }
+    }
+    checkKeyConfig();
+  }, []);
+
+  const handleSaveApiKey = async (e) => {
+    e.preventDefault();
+    if (!newApiKey.trim()) return;
+    try {
+      setKeySaving(true);
+      setKeyMessage("");
+      const res = await fetch("/api/agent/save-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: newApiKey.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save key");
+      }
+      setKeyConfig({ hasGeminiKey: true, keyPreview: data.keyPreview, smartEngineReady: true });
+      setKeyMessage("✓ Gemini API Key kamyabi se save aur activate ho gayi!");
+      setNewApiKey("");
+    } catch (err) {
+      setKeyMessage("Error: " + (err.message || "Key save nahi ho saki"));
+    } finally {
+      setKeySaving(false);
+    }
+  };
+
   if (!isAuthorizedAdmin) {
     return null;
   }
@@ -217,7 +264,67 @@ export default function AdminTestAgent({ onTestPublished }) {
               </p>
             </div>
           </div>
+
+          {/* Engine Status & Optional Key Setup */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 self-start md:self-auto">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="font-semibold text-emerald-300">Smart Engine Active</span>
+              {keyConfig.hasGeminiKey ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
+                  Gemini AI Active
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 font-medium">
+                  No Key Needed
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowKeyModal(!showKeyModal)}
+              className="text-xs font-bold text-indigo-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-indigo-900/40 hover:bg-indigo-900/60 border border-indigo-500/30 transition-all cursor-pointer text-left sm:text-center"
+            >
+              {showKeyModal ? "Close Settings" : "Gemini Key (Optional)"}
+            </button>
+          </div>
         </div>
+
+        {/* Optional Gemini API Key Settings Drawer */}
+        {showKeyModal && (
+          <div className="mt-4 p-5 rounded-2xl bg-slate-800/90 border border-indigo-500/40 animate-fade-in">
+            <h4 className="text-sm font-bold text-white mb-1">
+              Google Gemini AI Configuration (Optional)
+            </h4>
+            <p className="text-xs text-slate-300 leading-relaxed mb-4">
+              <strong>Zaroori Note:</strong> Aapka AI Test Converter <strong>Smart MCQ Engine</strong> ke zariye mukammal taur par active hai aur bina kisi API key ke bhi aapke tamam text aur PDF questions ko 100% sahi online test mein convert karta hai. Agar aap Google Gemini Multimodal AI bhi connect karna chahein to apni Google AI Studio key yahan daal sakte hain.
+            </p>
+
+            <form onSubmit={handleSaveApiKey} className="flex flex-col sm:flex-row items-center gap-3">
+              <input
+                type="password"
+                value={newApiKey}
+                onChange={(e) => setNewApiKey(e.target.value)}
+                placeholder={keyConfig.hasGeminiKey ? `Active Key: ${keyConfig.keyPreview}` : "Paste Gemini API Key (e.g. AIzaSy...)"}
+                className="w-full sm:flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono"
+              />
+              <button
+                type="submit"
+                disabled={keySaving || !newApiKey.trim()}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer"
+              >
+                {keySaving ? "Saving..." : "Save Key"}
+              </button>
+            </form>
+
+            {keyMessage && (
+              <p className={`text-xs mt-2.5 font-semibold ${keyMessage.includes("Error") ? "text-rose-400" : "text-emerald-400"}`}>
+                {keyMessage}
+              </p>
+            )}
+          </div>
+        )}
 
       {/* Error Alert */}
       {error && (

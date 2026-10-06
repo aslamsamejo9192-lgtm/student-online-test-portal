@@ -281,7 +281,7 @@ export default function AdminDashboard() {
                 EasyPaisa &amp; JazzCash Fee Collections (Rs. 10/Test)
               </h2>
               <p className="text-xs text-slate-500">
-                Receiver: Aslam Samejo / Medico Engineer (03700113837)
+                Receiver: Medico Engineer (03700113837)
               </p>
             </div>
           </div>

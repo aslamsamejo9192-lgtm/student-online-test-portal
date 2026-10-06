@@ -107,7 +107,7 @@ export default function AdminRegister() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Aslam Samejo"
+                  placeholder="e.g. Administrator"
                   required
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all placeholder:text-slate-400 bg-slate-50/50 focus:bg-white"
                 />

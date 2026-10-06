@@ -49,13 +49,17 @@ export default function SubjectBoxes({ embedded = false }) {
     loadTests();
   }, []);
 
-  // Pre-fill user data if logged in
+  // Pre-fill user data if logged in (only for regular students, never prefill Aslam)
   useEffect(() => {
     if (user) {
+      const isAslam =
+        (user.name || "").toLowerCase().includes("aslam") ||
+        (user.email || "").toLowerCase().includes("aslam");
+
       setStudentInfo((prev) => ({
         ...prev,
-        name: prev.name || user.name || user.displayName || "",
-        email: prev.email || user.email || ""
+        name: isAslam ? "" : prev.name || user.name || "",
+        email: isAslam ? "" : prev.email || user.email || ""
       }));
     }
   }, [user]);
@@ -460,13 +464,13 @@ export default function SubjectBoxes({ embedded = false }) {
 
                   {/* Year badge */}
                   <span className="px-2.5 py-1 rounded-lg bg-[#121929] text-slate-400 font-semibold text-xs border border-slate-800/80">
-                    2025
+                    2026
                   </span>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-2xl sm:text-3xl font-black text-white mt-3 mb-6 tracking-tight">
-                  {selectedChapter.title} Test 2025
+                  {selectedChapter.title} Test 2026
                 </h3>
 
                 {/* Meta Chips Row */}
@@ -518,7 +522,7 @@ export default function SubjectBoxes({ embedded = false }) {
                   </div>
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      Start: {selectedChapter.title} 2025
+                      Start: {selectedChapter.title} 2026
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
                       Ready to begin?
@@ -637,7 +641,7 @@ export default function SubjectBoxes({ embedded = false }) {
                       <span>70:00</span>
                     </span>
                     <span className="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">
-                      Student: {studentInfo.name || "Candidate"}
+                      Student: {studentInfo.name && !studentInfo.name.toLowerCase().includes("aslam") ? studentInfo.name : "Candidate"}
                     </span>
                   </div>
                 </div>
