@@ -15,9 +15,8 @@ const __dirname = path.dirname(__filename);
 function isValidGeminiKey(key?: string): boolean {
   if (!key) return false;
   const trimmed = key.trim();
-  // Filter out internal sandbox token placeholders that start with AQ.
-  if (trimmed.startsWith("AQ.") || trimmed.length < 25) return false;
-  return true;
+  // Valid Google AI Studio API keys MUST start with AIzaSy and be at least 35 characters
+  return trimmed.startsWith("AIzaSy") && trimmed.length >= 35;
 }
 
 async function startServer() {
@@ -88,9 +87,9 @@ async function startServer() {
         passingPercentage
       } = req.body || {};
 
-      if (!text && !fileBase64) {
+      if (!text && !fileBase64 && !customTitle) {
         return res.status(400).json({
-          error: "Please provide either a PDF/Document file or paste text/questions to convert."
+          error: "Baraye meharbani PDF file upload karein ya text / MCQs darj karein."
         });
       }
 
@@ -104,7 +103,9 @@ async function startServer() {
         }
       }
 
-      const combinedText = [text || "", extractedPdfText].filter(Boolean).join("\n\n").trim();
+      const combinedText = (text?.trim() || extractedPdfText)
+        ? [text || "", extractedPdfText].filter(Boolean).join("\n\n").trim()
+        : (customTitle || "").trim();
 
       // Step 2: If a valid Gemini API key is configured, attempt Gemini conversion
       const apiKey = process.env.GEMINI_API_KEY;

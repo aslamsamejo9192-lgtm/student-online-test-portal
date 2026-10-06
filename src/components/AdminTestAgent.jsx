@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createTest } from "../firebase";
 import { useAuth } from "../context/AuthContext";
@@ -155,8 +155,8 @@ export default function AdminTestAgent({ onTestPublished }) {
     setError("");
     setPublishedTest(null);
 
-    if (!inputText.trim() && (!selectedFile || !selectedFile.base64)) {
-      setError("Baraye meharbani PDF file upload karein ya text/MCQs paste karein.");
+    if (!inputText.trim() && (!selectedFile || !selectedFile.base64) && !customTitle.trim()) {
+      setError("Baraye meharbani PDF file upload karein ya text / topic / MCQs darj karein.");
       return;
     }
 
@@ -164,8 +164,8 @@ export default function AdminTestAgent({ onTestPublished }) {
       setLoading(true);
       setStatusMessage(
         selectedFile?.base64
-          ? `AI Agent "${selectedFile.name}" ko read kar ke MCQs extract kar raha hai...`
-          : "AI Agent aapke text ko online MCQ test mein convert kar raha hai..."
+          ? `Smart Agent "${selectedFile.name}" ko read kar ke MCQs extract kar raha hai...`
+          : "Smart Agent aapke text ko online MCQ test mein convert kar raha hai..."
       );
 
       const response = await fetch("/api/agent/convert-test", {
@@ -187,7 +187,11 @@ export default function AdminTestAgent({ onTestPublished }) {
 
       const data = await response.json();
       if (!response.ok || !data.success || !data.test) {
-        throw new Error(data.error || "Test convert karne mein masla aaya. Dobara koshish karein.");
+        let errText = data.error || "Test convert karne mein masla aaya. Dobara koshish karein.";
+        if (typeof errText === "string" && (errText.includes("401") || errText.includes("UNAUTHENTICATED") || errText.includes("credential"))) {
+          errText = "Smart MCQ Engine active hai. Baraye meharbani apne MCQs text box mein paste karein ya PDF upload karein.";
+        }
+        throw new Error(errText);
       }
 
       const generatedTest = data.test;
