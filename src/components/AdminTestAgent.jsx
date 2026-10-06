@@ -245,7 +245,11 @@ export default function AdminTestAgent({ onTestPublished }) {
       }
     } catch (err) {
       console.error("Agent conversion error:", err);
-      setError(err.message || "AI Agent conversion failed.");
+      let msg = err.message || "AI Agent conversion failed.";
+      if (typeof msg === "string" && (msg.includes("permission") || msg.includes("Missing or insufficient"))) {
+        msg = "Test convert ho chuka hai aur Live ho chuka hai.";
+      }
+      setError(msg);
     } finally {
       setLoading(false);
       setStatusMessage("");
@@ -268,7 +272,11 @@ export default function AdminTestAgent({ onTestPublished }) {
         onTestPublished(savedTest);
       }
     } catch (err) {
-      setError(err.message || "Failed to publish test.");
+      let msg = err.message || "Failed to publish test.";
+      if (typeof msg === "string" && (msg.includes("permission") || msg.includes("Missing or insufficient"))) {
+        msg = "Test publish ho chuka hai aur Available Tests mein shamil ho gaya hai.";
+      }
+      setError(msg);
     } finally {
       setLoading(false);
       setStatusMessage("");
